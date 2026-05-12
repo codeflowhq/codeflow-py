@@ -84,10 +84,38 @@ while queue:
 """
 
 STEP_TRACER_CASES: tuple[dict[str, Any], ...] = (
-    {"label": "Bubble sort array states", "snippet": STEP_TRACER_SNIPPET, "watch": ["data"], "max_events": 6, "max_steps": 4, "stem": "step_trace_sort"},
-    {"label": "BFS frontier + visited nodes", "snippet": STEP_TRACER_BFS_SNIPPET, "watch": ["queue_state", "visited_nodes"], "max_events": 12, "max_steps": 5, "stem": "step_trace_bfs"},
-    {"label": "0/1 knapsack DP table", "snippet": STEP_TRACER_DP_SNIPPET, "watch": ["dp_matrix"], "max_events": 12, "max_steps": 5, "stem": "step_trace_dp"},
-    {"label": "BFS spanning tree graph", "snippet": STEP_TRACER_GRAPH_SNIPPET, "watch": ["graph_snapshot"], "max_events": 10, "max_steps": 5, "stem": "step_trace_graph"},
+    {
+        "label": "Bubble sort array states",
+        "snippet": STEP_TRACER_SNIPPET,
+        "watch": ["data"],
+        "max_events": 6,
+        "max_steps": 4,
+        "stem": "step_trace_sort",
+    },
+    {
+        "label": "BFS frontier + visited nodes",
+        "snippet": STEP_TRACER_BFS_SNIPPET,
+        "watch": ["queue_state", "visited_nodes"],
+        "max_events": 12,
+        "max_steps": 5,
+        "stem": "step_trace_bfs",
+    },
+    {
+        "label": "0/1 knapsack DP table",
+        "snippet": STEP_TRACER_DP_SNIPPET,
+        "watch": ["dp_matrix"],
+        "max_events": 12,
+        "max_steps": 5,
+        "stem": "step_trace_dp",
+    },
+    {
+        "label": "BFS spanning tree graph",
+        "snippet": STEP_TRACER_GRAPH_SNIPPET,
+        "watch": ["graph_snapshot"],
+        "max_events": 10,
+        "max_steps": 5,
+        "stem": "step_trace_graph",
+    },
 )
 
 
@@ -105,7 +133,9 @@ class ListNode:
 
 
 def build_tree_demo() -> Node:
-    return Node(5, left=Node(3, left=Node(1), right=Node(4)), right=Node(8, right=Node(9)))
+    return Node(
+        5, left=Node(3, left=Node(1), right=Node(4)), right=Node(8, right=Node(9))
+    )
 
 
 def bubble_sort_frames(arr: list[int]) -> list[tuple[str, list[int]]]:
@@ -116,7 +146,7 @@ def bubble_sort_frames(arr: list[int]) -> list[tuple[str, list[int]]]:
         for j in range(0, n - i - 1):
             if a[j] > a[j + 1]:
                 a[j], a[j + 1] = a[j + 1], a[j]
-                frames.append((f"swap {j}<->{j+1}", a[:]))
+                frames.append((f"swap {j}<->{j + 1}", a[:]))
     frames.append(("done", a[:]))
     return frames
 

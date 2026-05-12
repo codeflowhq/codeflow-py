@@ -51,8 +51,12 @@ def render_structured_view(
     anchor_meta: dict[str, Any] = {}
     if view == ViewKind.GRAPH:
         anchor_meta["connect"] = False
-    nested_graph.anchors.append(Anchor(name=name, node_id=root_id, kind=AnchorKind.VAR, meta=anchor_meta))
-    graph_direction: DirectionLiteral = "TD" if view in {ViewKind.TREE, ViewKind.HASH_TABLE} else direction
+    nested_graph.anchors.append(
+        Anchor(name=name, node_id=root_id, kind=AnchorKind.VAR, meta=anchor_meta)
+    )
+    graph_direction: DirectionLiteral = (
+        "TD" if view in {ViewKind.TREE, ViewKind.HASH_TABLE} else direction
+    )
     graph_dot = render_graphviz_node_link(nested_graph, direction=graph_direction)
     artifact_title = f"{name}: {view.value}" if show_titles else None
     return Artifact(ArtifactKind.GRAPHVIZ, graph_dot, title=artifact_title), True

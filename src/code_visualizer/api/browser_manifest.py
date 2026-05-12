@@ -81,8 +81,19 @@ def build_browser_manifest(
         kind = steps[0].kind if steps else "dot"
         trace = traces.get(variable)
         sample_value = trace.frames[-1].value if trace and trace.frames else None
-        compatible_view_kinds = [view.value for view in compatible_views(sample_value)] if sample_value is not None else ["auto"]
-        manifest.append(BrowserManifestEntry(variable=variable, kind=kind, compatible_view_kinds=compatible_view_kinds, steps=steps))
+        compatible_view_kinds = (
+            [view.value for view in compatible_views(sample_value)]
+            if sample_value is not None
+            else ["auto"]
+        )
+        manifest.append(
+            BrowserManifestEntry(
+                variable=variable,
+                kind=kind,
+                compatible_view_kinds=compatible_view_kinds,
+                steps=steps,
+            )
+        )
     return BrowserManifest(manifest=manifest)
 
 

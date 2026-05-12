@@ -45,7 +45,11 @@ def test_expression_watch_preserves_nested_focus_path() -> None:
 
     projected = _project_expression_watch_events(
         [event],
-        [WatchFilter(name="data", access_path='data["users"]', trace_name='data["users"]')],
+        [
+            WatchFilter(
+                name="data", access_path='data["users"]', trace_name='data["users"]'
+            )
+        ],
     )
 
     assert len(projected) == 1
@@ -56,12 +60,15 @@ def test_expression_watch_preserves_nested_focus_path() -> None:
 
 
 def test_focus_path_prefers_specific_access_path() -> None:
-    assert _focus_path_from_frame_meta(
-        {
-            "access_path": "data",
-            "access_paths": ["data", "data['users'][1]['tags'][0]"],
-        }
-    ) == "data['users'][1]['tags'][0]"
+    assert (
+        _focus_path_from_frame_meta(
+            {
+                "access_path": "data",
+                "access_paths": ["data", "data['users'][1]['tags'][0]"],
+            }
+        )
+        == "data['users'][1]['tags'][0]"
+    )
 
 
 def test_root_and_expression_watches_both_keep_nested_updates() -> None:
@@ -72,7 +79,9 @@ data["users"][1]["tags"][0] = "z"
 
     events = trace_algorithm(source, ["data", 'data["users"]'])
     data_paths = [event.access_path for event in events if event.variable == "data"]
-    users_paths = [event.access_path for event in events if event.variable == 'data["users"]']
+    users_paths = [
+        event.access_path for event in events if event.variable == 'data["users"]'
+    ]
 
     assert "data['users'][1]['tags'][0]" in data_paths
     assert "data['users'][1]['tags'][0]" in users_paths

@@ -62,7 +62,9 @@ def _ensure_tracer(instance: StepTracer | None) -> StepTracer:
     return StepTracer()
 
 
-def _query_variable_snapshots(execution_context: Any, filters: Sequence[WatchFilter]) -> list[Any]:
+def _query_variable_snapshots(
+    execution_context: Any, filters: Sequence[WatchFilter]
+) -> list[Any]:
     if QueryEngine is None:
         raise StepTracerUnavailableError(
             "query-engine is missing. Install it via "
@@ -100,7 +102,12 @@ def _query_variable_snapshots(execution_context: Any, filters: Sequence[WatchFil
             continue
         seen.add(identity)
         deduped.append(snapshot)
-    deduped.sort(key=lambda snapshot: (getattr(snapshot, "execution_id", 0), getattr(snapshot, "line_number", 0)))
+    deduped.sort(
+        key=lambda snapshot: (
+            getattr(snapshot, "execution_id", 0),
+            getattr(snapshot, "line_number", 0),
+        )
+    )
     return deduped
 
 
@@ -133,7 +140,9 @@ def trace_algorithm(
             if len(seen_execution_ids) > limit:
                 break
             limited.append(snapshot)
-    watched_roots = {rule.name for rule in filters if rule.name and rule.access_path is None}
+    watched_roots = {
+        rule.name for rule in filters if rule.name and rule.access_path is None
+    }
 
     events: list[VariableTraceEvent] = []
     for index, snapshot in enumerate(limited, start=1):
@@ -143,7 +152,9 @@ def trace_algorithm(
                 continue
             if rule.access_path is not None and snapshot.name in watched_roots:
                 continue
-            trace_name = rule.trace_name or rule.access_path or rule.name or snapshot.name
+            trace_name = (
+                rule.trace_name or rule.access_path or rule.name or snapshot.name
+            )
             break
         events.append(
             VariableTraceEvent(

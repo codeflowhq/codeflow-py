@@ -16,7 +16,9 @@ from ..view_types import ViewKind
 from .context import ViewBuildContext
 
 
-def build_image_view(runtime: ViewBuildContext, value: Any, name: str, depth: int) -> str:
+def build_image_view(
+    runtime: ViewBuildContext, value: Any, name: str, depth: int
+) -> str:
     del depth
     src = _detect_image_source(value, strict=True)
     if src is None:
@@ -25,7 +27,10 @@ def build_image_view(runtime: ViewBuildContext, value: Any, name: str, depth: in
     html = html_table(
         html_row(
             html_cell(
-                html_font(html_bold_text(name), {"point-size": TITLE_FONT_SIZE, "color": TEXT_PRIMARY}),
+                html_font(
+                    html_bold_text(name),
+                    {"point-size": TITLE_FONT_SIZE, "color": TEXT_PRIMARY},
+                ),
                 align="center",
             )
         ),
@@ -34,5 +39,12 @@ def build_image_view(runtime: ViewBuildContext, value: Any, name: str, depth: in
         cellborder="0",
         cellspacing="2",
     )
-    runtime.graph.add_node(VisualNode(node_id, NodeKind.OBJECT, html, {"html_label": True, "node_attrs": {"shape": "plain"}}))
+    runtime.graph.add_node(
+        VisualNode(
+            node_id,
+            NodeKind.OBJECT,
+            html,
+            {"html_label": True, "node_attrs": {"shape": "plain"}},
+        )
+    )
     return node_id

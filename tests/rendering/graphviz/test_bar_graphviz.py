@@ -15,7 +15,6 @@ def test_render_graphviz_bar_handles_empty_and_truncation() -> None:
     assert ">…<" in dot or "…" in dot
 
 
-
 def test_render_graphviz_bar_rejects_non_numeric_lists() -> None:
     with pytest.raises(TypeError):
         render_graphviz_bar([1, "x"])

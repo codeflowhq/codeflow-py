@@ -96,12 +96,19 @@ def experimental_array_nested_resolver(
     runtime: ViewBuildContext,
     original_resolver: ViewResolver | None,
 ) -> ViewResolver:
-    def _resolver(slot_name: str, original_value: Any, coerced_value: Any) -> tuple[ViewKind, bool]:
+    def _resolver(
+        slot_name: str, original_value: Any, coerced_value: Any
+    ) -> tuple[ViewKind, bool]:
         if original_resolver is not None:
-            resolved_view, configured = original_resolver(slot_name, original_value, coerced_value)
+            resolved_view, configured = original_resolver(
+                slot_name, original_value, coerced_value
+            )
             if configured:
                 return resolved_view, True
-            if resolved_view in RECURSIVE_VIEW_KINDS and resolved_view != ViewKind.ARRAY_CELLS:
+            if (
+                resolved_view in RECURSIVE_VIEW_KINDS
+                and resolved_view != ViewKind.ARRAY_CELLS
+            ):
                 return resolved_view, False
         legacy_view = legacy_nested_view(runtime, coerced_value)
         if legacy_view == ViewKind.ARRAY_CELLS:
@@ -125,13 +132,19 @@ def make_nested_renderer(
     def _renderer(child_value: Any, _: str, depth_remaining: int) -> str | None:
         coerce = runtime.coerce
         coerced = coerce(child_value)
-        next_view = select_nested_view(runtime, slot_name, child_value, coerced, depth_remaining)
+        next_view = select_nested_view(
+            runtime, slot_name, child_value, coerced, depth_remaining
+        )
         if next_view is None:
             return None
-        inline_html = render_inline_child_view(runtime, coerced, slot_name, next_view, max(0, depth_remaining))
+        inline_html = render_inline_child_view(
+            runtime, coerced, slot_name, next_view, max(0, depth_remaining)
+        )
         if inline_html is not None:
             return inline_html
-        child_id = _build_view(runtime, coerced, slot_name, next_view, max(0, depth_remaining))
+        child_id = _build_view(
+            runtime, coerced, slot_name, next_view, max(0, depth_remaining)
+        )
         add_edge(runtime, parent_id, child_id, tailport=port_name)
         return ""
 
@@ -171,7 +184,9 @@ def render_inline_child_view(
         return root_node.label
 
     direction = "TD" if view in {ViewKind.TREE, ViewKind.HASH_TABLE} else "LR"
-    dot_source = render_graphviz_node_link(child_graph, direction="LR" if direction == "LR" else "TD")
+    dot_source = render_graphviz_node_link(
+        child_graph, direction="LR" if direction == "LR" else "TD"
+    )
     img_src = _render_dot_to_image(dot_source, fmt="png")
     if img_src is None:
         return None

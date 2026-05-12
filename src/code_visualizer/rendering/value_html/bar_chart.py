@@ -10,9 +10,13 @@ from ..theme import (
 )
 
 
-def bar_chart_html(values: list[float], labels: list[str], max_height_px: int = 160) -> str:
+def bar_chart_html(
+    values: list[float], labels: list[str], max_height_px: int = 160
+) -> str:
     if not values:
-        return html_table(html_row(html_cell("∅")), border="1", cellborder="1", cellspacing="0")
+        return html_table(
+            html_row(html_cell("∅")), border="1", cellborder="1", cellspacing="0"
+        )
 
     max_abs = max(abs(value) for value in values) or 1.0
     columns: list[str] = []
@@ -24,8 +28,21 @@ def bar_chart_html(values: list[float], labels: list[str], max_height_px: int = 
         inner = html_table(
             html_row(html_cell("", height=gap)),
             html_row(html_cell("", bgcolor=color, width="34", height=height)),
-            html_row(html_cell(html_font(str(value_text), {"point-size": BODY_FONT_SIZE, "color": TEXT_PRIMARY}), align="center")),
-            html_row(html_cell(html_font(html_text(label), {"point-size": 9, "color": TEXT_INDEX}), align="center")),
+            html_row(
+                html_cell(
+                    html_font(
+                        str(value_text),
+                        {"point-size": BODY_FONT_SIZE, "color": TEXT_PRIMARY},
+                    ),
+                    align="center",
+                )
+            ),
+            html_row(
+                html_cell(
+                    html_font(html_text(label), {"point-size": 9, "color": TEXT_INDEX}),
+                    align="center",
+                )
+            ),
             border="0",
             cellborder="0",
             cellspacing="0",

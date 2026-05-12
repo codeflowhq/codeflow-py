@@ -18,7 +18,9 @@ def test_build_browser_manifest_payload_exposes_step_identity() -> None:
     assert step["title"] is None
 
 
-def test_resolve_recursion_depth_prefers_variable_override_but_clamps_to_global_max() -> None:
+def test_resolve_recursion_depth_prefers_variable_override_but_clamps_to_global_max() -> (
+    None
+):
     config = default_visualizer_config()
     config.recursion_depth_default = 1
     config.max_depth = 2

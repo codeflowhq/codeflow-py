@@ -17,12 +17,16 @@ def graphviz_array_block(
     slot_name: str = "array",
 ) -> str:
     value_row = (
-        html_cell("&nbsp;", id=_stable_svg_id(slot_name, "value", "empty"), align="center")
+        html_cell(
+            "&nbsp;", id=_stable_svg_id(slot_name, "value", "empty"), align="center"
+        )
         if not value_cells
         else "".join(value_cells)
     )
     index_row = (
-        html_cell("&nbsp;", id=_stable_svg_id(slot_name, "index", "empty"), align="center")
+        html_cell(
+            "&nbsp;", id=_stable_svg_id(slot_name, "index", "empty"), align="center"
+        )
         if not index_cells
         else "".join(index_cells)
     )
@@ -41,8 +45,16 @@ def graphviz_array_block(
         cellspacing="4",
     )
     return html_table(
-        html_row(html_cell(value_table, id=_stable_svg_id(slot_name, "value-table-container"))),
-        html_row(html_cell(index_table, id=_stable_svg_id(slot_name, "index-table-container"))),
+        html_row(
+            html_cell(
+                value_table, id=_stable_svg_id(slot_name, "value-table-container")
+            )
+        ),
+        html_row(
+            html_cell(
+                index_table, id=_stable_svg_id(slot_name, "index-table-container")
+            )
+        ),
         id=_stable_svg_id(slot_name, "wrapper"),
         border="0",
         cellborder="0",
@@ -69,10 +81,14 @@ def sequence_html(
             nested_renderer,
             f"{slot_name}[{index}]",
         )
-        value_cells.append(html_cell(cell_html, align="center", bgcolor=BG_SURFACE, cellpadding="4"))
+        value_cells.append(
+            html_cell(cell_html, align="center", bgcolor=BG_SURFACE, cellpadding="4")
+        )
         index_cells.append(
             html_cell(
-                html_font(str(index), {"color": TEXT_INDEX, "point-size": INDEX_FONT_SIZE}),
+                html_font(
+                    str(index), {"color": TEXT_INDEX, "point-size": INDEX_FONT_SIZE}
+                ),
                 align="center",
             )
         )

@@ -45,11 +45,23 @@ def _add_graphviz_nodes(
             dot.node(str(node_id), label=dot_escape_label(node.label), **node_attrs)
         rank_spec = node.meta.get("rank")
         if isinstance(rank_spec, str):
-            _assign_rank_group(rank_spec, str(node_id), rank_groups=rank_groups, min_rank=min_rank, max_rank=max_rank)
+            _assign_rank_group(
+                rank_spec,
+                str(node_id),
+                rank_groups=rank_groups,
+                min_rank=min_rank,
+                max_rank=max_rank,
+            )
         elif isinstance(rank_spec, (list, tuple, set)):
             for spec in rank_spec:
                 if isinstance(spec, str):
-                    _assign_rank_group(spec, str(node_id), rank_groups=rank_groups, min_rank=min_rank, max_rank=max_rank)
+                    _assign_rank_group(
+                        spec,
+                        str(node_id),
+                        rank_groups=rank_groups,
+                        min_rank=min_rank,
+                        max_rank=max_rank,
+                    )
 
 
 def _add_graphviz_edges(dot: Digraph, graph: VisualGraph) -> None:
@@ -82,20 +94,33 @@ def _add_rank_constraints(
         dot.body.append(f"{{rank=max; {' '.join(max_rank)} }}")
 
 
-def render_graphviz_node_link(graph: VisualGraph, direction: DirectionLiteral = "LR") -> str:
+def render_graphviz_node_link(
+    graph: VisualGraph, direction: DirectionLiteral = "LR"
+) -> str:
     rankdir = "LR" if direction == "LR" else "TB"
     dot = Digraph("G")
     graph_attrs = {"rankdir": rankdir, "nodesep": "0.6", "ranksep": "0.7"}
     graph_attrs.update({key: str(value) for key, value in graph.graph_attrs.items()})
     dot.attr("graph", **graph_attrs)
-    dot.attr("node", shape="box", style="rounded,filled", fillcolor=BG_SURFACE, color=BORDER_TREE, fontname=FONT_FAMILY)
+    dot.attr(
+        "node",
+        shape="box",
+        style="rounded,filled",
+        fillcolor=BG_SURFACE,
+        color=BORDER_TREE,
+        fontname=FONT_FAMILY,
+    )
     dot.attr("edge", color=BORDER_CHAIN, fontname=FONT_FAMILY)
 
     rank_groups: dict[str, list[str]] = defaultdict(list)
     min_rank: list[str] = []
     max_rank: list[str] = []
-    _add_graphviz_nodes(dot, graph, rank_groups=rank_groups, min_rank=min_rank, max_rank=max_rank)
+    _add_graphviz_nodes(
+        dot, graph, rank_groups=rank_groups, min_rank=min_rank, max_rank=max_rank
+    )
     _add_graphviz_edges(dot, graph)
-    _add_rank_constraints(dot, rank_groups=rank_groups, min_rank=min_rank, max_rank=max_rank)
+    _add_rank_constraints(
+        dot, rank_groups=rank_groups, min_rank=min_rank, max_rank=max_rank
+    )
 
     return str(dot.source)

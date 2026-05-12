@@ -44,7 +44,9 @@ def _bar_entry_label(value: Any) -> str:
     return display
 
 
-def _bar_item_label(fill: str, *, bar_height: int, spacer_height: int, value_label: str, index: int) -> str:
+def _bar_item_label(
+    fill: str, *, bar_height: int, spacer_height: int, value_label: str, index: int
+) -> str:
     bar_body = html_table(
         html_row(html_cell("", width="28", height=spacer_height)),
         html_row(html_cell("", width="28", height=bar_height, bgcolor=fill)),
@@ -57,14 +59,19 @@ def _bar_item_label(fill: str, *, bar_height: int, spacer_height: int, value_lab
         html_row(html_cell(bar_body, align="center")),
         html_row(
             html_cell(
-                html_font(html_bold_text(value_label), {"color": TEXT_PRIMARY, "point-size": 11}),
+                html_font(
+                    html_bold_text(value_label),
+                    {"color": TEXT_PRIMARY, "point-size": 11},
+                ),
                 align="center",
                 cellpadding="2",
             )
         ),
         html_row(
             html_cell(
-                html_font(str(index), {"color": TEXT_MUTED, "point-size": SUBTITLE_FONT_SIZE}),
+                html_font(
+                    str(index), {"color": TEXT_MUTED, "point-size": SUBTITLE_FONT_SIZE}
+                ),
                 align="center",
                 cellpadding="0",
             )
@@ -76,7 +83,9 @@ def _bar_item_label(fill: str, *, bar_height: int, spacer_height: int, value_lab
     )
 
 
-def build_bar_view_node_columns(runtime: ViewBuildContext, value: Any, name: str, depth: int) -> str:
+def build_bar_view_node_columns(
+    runtime: ViewBuildContext, value: Any, name: str, depth: int
+) -> str:
     logical_name = name.split(" [step ", 1)[0]
     if not isinstance(value, (list, tuple)):
         raise TypeError("bar_node view expects list-like numeric input")
@@ -106,7 +115,15 @@ def build_bar_view_node_columns(runtime: ViewBuildContext, value: Any, name: str
             root_id,
             NodeKind.OBJECT,
             "",
-            {"kind": "bar_root", "node_attrs": {"shape": "point", "style": "invis", "width": "0.01", "height": "0.01"}},
+            {
+                "kind": "bar_root",
+                "node_attrs": {
+                    "shape": "point",
+                    "style": "invis",
+                    "width": "0.01",
+                    "height": "0.01",
+                },
+            },
         )
     )
     attach_view_title(runtime, root_id, name, "bar_node")
@@ -125,10 +142,24 @@ def build_bar_view_node_columns(runtime: ViewBuildContext, value: Any, name: str
                 empty_id,
                 NodeKind.OBJECT,
                 empty_label,
-                {"html_label": True, "node_attrs": {"shape": "plain", "color": BORDER_DEFAULT, "penwidth": "1.0"}},
+                {
+                    "html_label": True,
+                    "node_attrs": {
+                        "shape": "plain",
+                        "color": BORDER_DEFAULT,
+                        "penwidth": "1.0",
+                    },
+                },
             )
         )
-        graph.add_edge(VisualEdge(root_id, empty_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis"}}))
+        graph.add_edge(
+            VisualEdge(
+                root_id,
+                empty_id,
+                type=EdgeKind.LAYOUT,
+                meta={"edge_attrs": {"style": "invis"}},
+            )
+        )
         return root_id
 
     max_height = 120
@@ -143,8 +174,12 @@ def build_bar_view_node_columns(runtime: ViewBuildContext, value: Any, name: str
         occurrence = occurrence_counts.get(scalar_key, 0)
         occurrence_counts[scalar_key] = occurrence + 1
 
-        graph_id = safe_dot_token("bar_item", logical_name or "bar", scalar_key, occurrence)
-        svg_id = _stable_svg_id(logical_name or "bar", "bar", "item", scalar_key, occurrence)
+        graph_id = safe_dot_token(
+            "bar_item", logical_name or "bar", scalar_key, occurrence
+        )
+        svg_id = _stable_svg_id(
+            logical_name or "bar", "bar", "item", scalar_key, occurrence
+        )
 
         bar_height = max(12, int((abs(numeric_value) / max_abs) * max_height))
         spacer_height = max_height - bar_height
@@ -177,9 +212,23 @@ def build_bar_view_node_columns(runtime: ViewBuildContext, value: Any, name: str
             )
         )
         if prev_id is None:
-            graph.add_edge(VisualEdge(root_id, graph_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis"}}))
+            graph.add_edge(
+                VisualEdge(
+                    root_id,
+                    graph_id,
+                    type=EdgeKind.LAYOUT,
+                    meta={"edge_attrs": {"style": "invis"}},
+                )
+            )
         else:
-            graph.add_edge(VisualEdge(prev_id, graph_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis"}}))
+            graph.add_edge(
+                VisualEdge(
+                    prev_id,
+                    graph_id,
+                    type=EdgeKind.LAYOUT,
+                    meta={"edge_attrs": {"style": "invis"}},
+                )
+            )
         prev_id = graph_id
 
     if len(seq) > item_limit and prev_id is not None:
@@ -194,7 +243,9 @@ def build_bar_view_node_columns(runtime: ViewBuildContext, value: Any, name: str
             ),
             html_row(
                 html_cell(
-                    html_font("…", {"color": TEXT_MUTED, "point-size": SUBTITLE_FONT_SIZE}),
+                    html_font(
+                        "…", {"color": TEXT_MUTED, "point-size": SUBTITLE_FONT_SIZE}
+                    ),
                     align="center",
                     cellpadding="0",
                 )
@@ -209,9 +260,24 @@ def build_bar_view_node_columns(runtime: ViewBuildContext, value: Any, name: str
                 more_id,
                 NodeKind.ELLIPSIS,
                 more_label,
-                {"html_label": True, "rank": "bar_items", "node_attrs": {"shape": "plain", "color": BORDER_DEFAULT, "penwidth": "1.0"}},
+                {
+                    "html_label": True,
+                    "rank": "bar_items",
+                    "node_attrs": {
+                        "shape": "plain",
+                        "color": BORDER_DEFAULT,
+                        "penwidth": "1.0",
+                    },
+                },
             )
         )
-        graph.add_edge(VisualEdge(prev_id, more_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis"}}))
+        graph.add_edge(
+            VisualEdge(
+                prev_id,
+                more_id,
+                type=EdgeKind.LAYOUT,
+                meta={"edge_attrs": {"style": "invis"}},
+            )
+        )
 
     return root_id

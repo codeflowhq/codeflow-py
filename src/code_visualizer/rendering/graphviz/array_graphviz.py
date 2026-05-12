@@ -29,7 +29,13 @@ def render_graphviz_array_cells(
     item_count = len(arr)
     limit = min(item_count, max_items)
     dot = Digraph("array")
-    dot.attr("graph", labelloc="t", label=dot_escape_label(f"{title} [cell-node-v1]"), ranksep="0.18", nodesep="0.02")
+    dot.attr(
+        "graph",
+        labelloc="t",
+        label=dot_escape_label(f"{title} [cell-node-v1]"),
+        ranksep="0.18",
+        nodesep="0.02",
+    )
     dot.attr("node", shape="plain", margin="0", fontname=FONT_FAMILY)
     dot.attr("edge", style="invis")
     depth_budget = max(0, nested_depth)
@@ -41,7 +47,11 @@ def render_graphviz_array_cells(
             cell_attrs={"id": _stable_svg_id(title, "value", "empty")},
             cellpadding="6",
         )
-        dot.node("array_empty", label=f"<{empty_label}>", id=_stable_svg_id(title, "node", "empty"))
+        dot.node(
+            "array_empty",
+            label=f"<{empty_label}>",
+            id=_stable_svg_id(title, "node", "empty"),
+        )
         return str(dot.source)
 
     value_node_ids: list[str] = []
@@ -51,7 +61,9 @@ def render_graphviz_array_cells(
         if cell_depth == 0 and _is_matrix_value(arr[index]):
             cell_depth = 1
         slot_name = f"{title}[{index}]"
-        cell_html = _format_nested_value(arr[index], cell_depth, max_items, nested_renderer, slot_name)
+        cell_html = _format_nested_value(
+            arr[index], cell_depth, max_items, nested_renderer, slot_name
+        )
         value_node_id = f"value_{index}"
         index_node_id = f"index_{index}"
         value_node_ids.append(value_node_id)
@@ -80,8 +92,16 @@ def render_graphviz_array_cells(
             cellborder="0",
             cellspacing="0",
         )
-        dot.node(value_node_id, label=f"<{value_label}>", id=_stable_svg_id(title, "node", "value", index))
-        dot.node(index_node_id, label=f"<{index_label}>", id=_stable_svg_id(title, "node", "index", index))
+        dot.node(
+            value_node_id,
+            label=f"<{value_label}>",
+            id=_stable_svg_id(title, "node", "value", index),
+        )
+        dot.node(
+            index_node_id,
+            label=f"<{index_label}>",
+            id=_stable_svg_id(title, "node", "index", index),
+        )
 
     if item_count > max_items:
         value_node_ids.append("value_ellipsis")
@@ -104,8 +124,16 @@ def render_graphviz_array_cells(
             cellborder="0",
             cellspacing="0",
         )
-        dot.node("value_ellipsis", label=f"<{ellipsis_label}>", id=_stable_svg_id(title, "node", "value", "ellipsis"))
-        dot.node("index_ellipsis", label=f"<{index_ellipsis_label}>", id=_stable_svg_id(title, "node", "index", "ellipsis"))
+        dot.node(
+            "value_ellipsis",
+            label=f"<{ellipsis_label}>",
+            id=_stable_svg_id(title, "node", "value", "ellipsis"),
+        )
+        dot.node(
+            "index_ellipsis",
+            label=f"<{index_ellipsis_label}>",
+            id=_stable_svg_id(title, "node", "index", "ellipsis"),
+        )
 
     for left, right in zip(value_node_ids, value_node_ids[1:], strict=False):
         dot.edge(left, right)

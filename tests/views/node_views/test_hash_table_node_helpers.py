@@ -27,7 +27,9 @@ def test_hash_bucket_head_node_marks_focus_style() -> None:
     plain = hash_bucket_head_node("data", 1, is_focused=False)
 
     assert focused.type is NodeKind.OBJECT
-    assert focused.meta["node_attrs"]["penwidth"] != plain.meta["node_attrs"]["penwidth"]
+    assert (
+        focused.meta["node_attrs"]["penwidth"] != plain.meta["node_attrs"]["penwidth"]
+    )
 
 
 def test_hash_chain_node_marks_focus_style() -> None:

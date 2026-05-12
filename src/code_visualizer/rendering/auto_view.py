@@ -68,9 +68,16 @@ def compatible_views(value: Any) -> list[ViewKind]:
     if pattern_view == ViewKind.MATRIX:
         return [ViewKind.AUTO, ViewKind.MATRIX]
     if pattern_view == ViewKind.ARRAY_CELLS:
-        numeric = isinstance(value, (list, tuple, set, frozenset)) and all(isinstance(item, (int, float)) for item in value)
+        numeric = isinstance(value, (list, tuple, set, frozenset)) and all(
+            isinstance(item, (int, float)) for item in value
+        )
         if numeric and isinstance(value, (list, tuple)):
-            return [ViewKind.AUTO, ViewKind.ARRAY_CELLS, ViewKind.BAR, ViewKind.HEAP_DUAL]
+            return [
+                ViewKind.AUTO,
+                ViewKind.ARRAY_CELLS,
+                ViewKind.BAR,
+                ViewKind.HEAP_DUAL,
+            ]
         return [ViewKind.AUTO, ViewKind.ARRAY_CELLS]
     if pattern_view == ViewKind.TABLE or isinstance(value, dict):
         return [ViewKind.AUTO, ViewKind.TABLE]

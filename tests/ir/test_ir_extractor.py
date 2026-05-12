@@ -21,7 +21,10 @@ def test_visual_ir_extractor_respects_depth_limit() -> None:
 
     graph = extractor.extract({"outer": {"inner": {"value": 3}}}, name="data")
 
-    assert any(node.type is NodeKind.ELLIPSIS and "max depth" in node.label for node in graph.nodes.values())
+    assert any(
+        node.type is NodeKind.ELLIPSIS and "max depth" in node.label
+        for node in graph.nodes.values()
+    )
 
 
 def test_visual_ir_extractor_deduplicates_shared_objects() -> None:

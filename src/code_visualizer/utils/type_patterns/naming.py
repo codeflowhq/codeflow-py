@@ -9,7 +9,9 @@ def _normalize_view_name(name: str) -> str:
     return "".join(ch for ch in name.strip() if not ch.isspace())
 
 
-def _match_named_override(name: str, mapping: Mapping[str, ViewKind] | None) -> ViewKind | None:
+def _match_named_override(
+    name: str, mapping: Mapping[str, ViewKind] | None
+) -> ViewKind | None:
     if not mapping:
         return None
     normalized = _normalize_view_name(name)

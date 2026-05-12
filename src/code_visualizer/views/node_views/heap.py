@@ -68,7 +68,9 @@ def _heap_strip_label(content_html: str, *, is_focused: bool, index: int) -> str
         ),
         html_row(
             html_cell(
-                html_font(str(index), {"color": TEXT_MUTED, "point-size": SUBTITLE_FONT_SIZE}),
+                html_font(
+                    str(index), {"color": TEXT_MUTED, "point-size": SUBTITLE_FONT_SIZE}
+                ),
                 align="center",
                 bgcolor=BG_SURFACE,
                 cellpadding="1",
@@ -81,14 +83,18 @@ def _heap_strip_label(content_html: str, *, is_focused: bool, index: int) -> str
     )
 
 
-def _build_heap_array_node_strip(runtime: ViewBuildContext, value: list[Any], name: str, depth: int) -> str:
+def _build_heap_array_node_strip(
+    runtime: ViewBuildContext, value: list[Any], name: str, depth: int
+) -> str:
     logical_name = name.split(" [step ", 1)[0]
     graph = runtime.graph
     item_limit = runtime.item_limit
     depth_budget = max(0, depth)
     cell_depth = depth_budget - 1 if depth_budget > 0 else 0
     limit = min(len(value), item_limit)
-    focus_idx = _heap_focus_index(runtime.focus_path, logical_name.split("[array]", 1)[0])
+    focus_idx = _heap_focus_index(
+        runtime.focus_path, logical_name.split("[array]", 1)[0]
+    )
 
     strip_root_id = new_node_id(runtime, "heap_arr")
     graph.add_node(
@@ -96,7 +102,15 @@ def _build_heap_array_node_strip(runtime: ViewBuildContext, value: list[Any], na
             strip_root_id,
             NodeKind.OBJECT,
             "",
-            {"kind": "heap_array_root", "node_attrs": {"shape": "point", "style": "invis", "width": "0.01", "height": "0.01"}},
+            {
+                "kind": "heap_array_root",
+                "node_attrs": {
+                    "shape": "point",
+                    "style": "invis",
+                    "width": "0.01",
+                    "height": "0.01",
+                },
+            },
         )
     )
 
@@ -110,13 +124,19 @@ def _build_heap_array_node_strip(runtime: ViewBuildContext, value: list[Any], na
             scalar_key = str(item)
             occurrence = occurrence_counts.get(scalar_key, 0)
             occurrence_counts[scalar_key] = occurrence + 1
-            node_id = safe_dot_token("heap_item", logical_name or "heap", scalar_key, occurrence)
-            svg_id = _stable_svg_id(logical_name or "heap", "heap", "item", scalar_key, occurrence)
+            node_id = safe_dot_token(
+                "heap_item", logical_name or "heap", scalar_key, occurrence
+            )
+            svg_id = _stable_svg_id(
+                logical_name or "heap", "heap", "item", scalar_key, occurrence
+            )
             content_html = _format_scalar_html(item)
         else:
             node_id = safe_dot_token("heap_cell", logical_name or "heap", idx)
             svg_id = _stable_svg_id(logical_name or "heap", "heap", "cell", idx)
-            content_html = render_nested_preview(item, cell_depth, item_limit, slot_name)
+            content_html = render_nested_preview(
+                item, cell_depth, item_limit, slot_name
+            )
             if not content_html:
                 content_html = _format_container_stub(item)
 
@@ -140,9 +160,23 @@ def _build_heap_array_node_strip(runtime: ViewBuildContext, value: list[Any], na
             )
         )
         if prev_id is None:
-            graph.add_edge(VisualEdge(strip_root_id, node_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "12"}}))
+            graph.add_edge(
+                VisualEdge(
+                    strip_root_id,
+                    node_id,
+                    type=EdgeKind.LAYOUT,
+                    meta={"edge_attrs": {"style": "invis", "weight": "12"}},
+                )
+            )
         else:
-            graph.add_edge(VisualEdge(prev_id, node_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "12"}}))
+            graph.add_edge(
+                VisualEdge(
+                    prev_id,
+                    node_id,
+                    type=EdgeKind.LAYOUT,
+                    meta={"edge_attrs": {"style": "invis", "weight": "12"}},
+                )
+            )
         prev_id = node_id
 
     if len(value) > item_limit and prev_id is not None:
@@ -157,7 +191,9 @@ def _build_heap_array_node_strip(runtime: ViewBuildContext, value: list[Any], na
             ),
             html_row(
                 html_cell(
-                    html_font("…", {"color": TEXT_MUTED, "point-size": SUBTITLE_FONT_SIZE}),
+                    html_font(
+                        "…", {"color": TEXT_MUTED, "point-size": SUBTITLE_FONT_SIZE}
+                    ),
                     align="center",
                     bgcolor=BG_SURFACE,
                     cellpadding="2",
@@ -173,15 +209,32 @@ def _build_heap_array_node_strip(runtime: ViewBuildContext, value: list[Any], na
                 more_id,
                 NodeKind.ELLIPSIS,
                 more_label,
-                {"html_label": True, "rank": "heap_array_items", "node_attrs": {"shape": "plain", "color": BORDER_DEFAULT, "penwidth": "1.0"}},
+                {
+                    "html_label": True,
+                    "rank": "heap_array_items",
+                    "node_attrs": {
+                        "shape": "plain",
+                        "color": BORDER_DEFAULT,
+                        "penwidth": "1.0",
+                    },
+                },
             )
         )
-        graph.add_edge(VisualEdge(prev_id, more_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "12"}}))
+        graph.add_edge(
+            VisualEdge(
+                prev_id,
+                more_id,
+                type=EdgeKind.LAYOUT,
+                meta={"edge_attrs": {"style": "invis", "weight": "12"}},
+            )
+        )
 
     return strip_root_id
 
 
-def build_heap_dual_view_node(runtime: ViewBuildContext, value: Any, name: str, depth: int) -> str:
+def build_heap_dual_view_node(
+    runtime: ViewBuildContext, value: Any, name: str, depth: int
+) -> str:
     if not isinstance(value, list):
         raise TypeError("heap_dual_node view expects list input")
 
@@ -196,10 +249,34 @@ def build_heap_dual_view_node(runtime: ViewBuildContext, value: Any, name: str, 
     )
 
     root_id = new_node_id(runtime, "heap_exp")
-    graph.add_node(VisualNode(root_id, NodeKind.OBJECT, "", {"kind": "heap_root", "node_attrs": {"shape": "point", "style": "invis", "width": "0.01", "height": "0.01"}}))
+    graph.add_node(
+        VisualNode(
+            root_id,
+            NodeKind.OBJECT,
+            "",
+            {
+                "kind": "heap_root",
+                "node_attrs": {
+                    "shape": "point",
+                    "style": "invis",
+                    "width": "0.01",
+                    "height": "0.01",
+                },
+            },
+        )
+    )
 
-    array_root_id = _build_heap_array_node_strip(runtime, value, f"{name}[array]", depth)
-    graph.add_edge(VisualEdge(root_id, array_root_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "24"}}))
+    array_root_id = _build_heap_array_node_strip(
+        runtime, value, f"{name}[array]", depth
+    )
+    graph.add_edge(
+        VisualEdge(
+            root_id,
+            array_root_id,
+            type=EdgeKind.LAYOUT,
+            meta={"edge_attrs": {"style": "invis", "weight": "24"}},
+        )
+    )
 
     tree_payload = build_heap_tree_payload(value, runtime.item_limit)
     if tree_payload is not None:
@@ -223,9 +300,16 @@ def build_heap_dual_view_node(runtime: ViewBuildContext, value: Any, name: str, 
             node_meta = dict(node.meta)
             html_label = bool(node_meta.pop("html_label", None))
             node_meta["node_attrs"] = node_attrs
-            next_label = _plain_heap_tree_label(node.label) if html_label else node.label
+            next_label = (
+                _plain_heap_tree_label(node.label) if html_label else node.label
+            )
             tree_graph.nodes[node.id] = replace(node, label=next_label, meta=node_meta)
-        tree_id = merge_visual_graph(runtime, tree_graph, new_node_id(runtime, ViewKind.TREE), root_hint=tree_root_hint)
+        tree_id = merge_visual_graph(
+            runtime,
+            tree_graph,
+            new_node_id(runtime, ViewKind.TREE),
+            root_hint=tree_root_hint,
+        )
     else:
         tree_id = new_node_id(runtime, "heap_empty")
         empty_html = html_table(
@@ -234,7 +318,21 @@ def build_heap_dual_view_node(runtime: ViewBuildContext, value: Any, name: str, 
             cellborder="1",
             cellspacing="0",
         )
-        graph.add_node(VisualNode(tree_id, NodeKind.OBJECT, empty_html, {"html_label": True, "node_attrs": {"shape": "plain"}}))
+        graph.add_node(
+            VisualNode(
+                tree_id,
+                NodeKind.OBJECT,
+                empty_html,
+                {"html_label": True, "node_attrs": {"shape": "plain"}},
+            )
+        )
 
-    graph.add_edge(VisualEdge(array_root_id, tree_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "24"}}))
+    graph.add_edge(
+        VisualEdge(
+            array_root_id,
+            tree_id,
+            type=EdgeKind.LAYOUT,
+            meta={"edge_attrs": {"style": "invis", "weight": "24"}},
+        )
+    )
     return root_id

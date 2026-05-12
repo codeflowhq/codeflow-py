@@ -15,7 +15,9 @@ from .view_resolution import determine_view, make_value_coercer, resolve_recursi
 DirectionLiteral = Literal["LR", "TD"]
 
 
-def visualize(value: Any, *, name: str = "x", config: VisualizerConfig | None = None) -> Artifact:
+def visualize(
+    value: Any, *, name: str = "x", config: VisualizerConfig | None = None
+) -> Artifact:
     cfg = config.copy() if config is not None else default_visualizer_config()
     resolved_direction: DirectionLiteral = "TD" if cfg.graph_direction == "TB" else "LR"
     value_coercer = make_value_coercer(cfg)
@@ -49,7 +51,9 @@ def visualize(value: Any, *, name: str = "x", config: VisualizerConfig | None = 
         view = ViewKind.NODE_LINK
 
     if _is_scalar_value(coerced_value):
-        return render_scalar_artifact(name, coerced_value, resolved_direction, show_titles=cfg.show_titles)
+        return render_scalar_artifact(
+            name, coerced_value, resolved_direction, show_titles=cfg.show_titles
+        )
 
     extractor = VisualIRExtractor(
         ExtractOptions(max_depth=cfg.max_depth, max_items=cfg.max_items_per_view),

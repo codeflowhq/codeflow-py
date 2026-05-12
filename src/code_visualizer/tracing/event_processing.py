@@ -109,7 +109,9 @@ def _project_expression_watch_events(
         return list(events)
 
     expression_rules = [rule for rule in filters if rule.name and rule.access_path]
-    root_names = {rule.name for rule in filters if rule.name and rule.access_path is None}
+    root_names = {
+        rule.name for rule in filters if rule.name and rule.access_path is None
+    }
     if not expression_rules:
         return list(events)
 
@@ -123,10 +125,16 @@ def _project_expression_watch_events(
             trace_name = rule.trace_name or rule.access_path
             if rule.name is None or event.variable not in {rule.name, trace_name}:
                 continue
-            projected_value = _extract_access_path_value(event.value, rule.access_path, rule.name)
+            projected_value = _extract_access_path_value(
+                event.value, rule.access_path, rule.name
+            )
             if projected_value is _MISSING:
                 continue
-            focus_path = event.access_path if access_path_matches(rule.access_path, event.access_path) else rule.access_path
+            focus_path = (
+                event.access_path
+                if access_path_matches(rule.access_path, event.access_path)
+                else rule.access_path
+            )
             access_paths = tuple(
                 dict.fromkeys(
                     path
@@ -151,7 +159,11 @@ def _project_expression_watch_events(
 
 
 def _pop_index(mutation: PopMutation) -> int:
-    return mutation.argument if mutation.has_argument and isinstance(mutation.argument, int) else -1
+    return (
+        mutation.argument
+        if mutation.has_argument and isinstance(mutation.argument, int)
+        else -1
+    )
 
 
 def _simulate_sequence_pop(value: list[Any], mutation: PopMutation) -> list[Any]:
@@ -201,11 +213,18 @@ def _stable_value_key(value: Any) -> str:
         return repr(value)
 
 
-def _merge_duplicate_root_events(events: Sequence[VariableTraceEvent]) -> list[VariableTraceEvent]:
+def _merge_duplicate_root_events(
+    events: Sequence[VariableTraceEvent],
+) -> list[VariableTraceEvent]:
     merged: list[VariableTraceEvent] = []
     index_by_key: dict[tuple[str, int, int, str], int] = {}
     for event in events:
-        key = (event.variable, event.execution_id, event.line_number, _stable_value_key(event.value))
+        key = (
+            event.variable,
+            event.execution_id,
+            event.line_number,
+            _stable_value_key(event.value),
+        )
         existing_index = index_by_key.get(key)
         if existing_index is None:
             access_paths = event.access_paths or (event.access_path,)
@@ -226,7 +245,11 @@ def _merge_duplicate_root_events(events: Sequence[VariableTraceEvent]) -> list[V
             continue
 
         existing = merged[existing_index]
-        access_paths = tuple(dict.fromkeys((*existing.access_paths, event.access_path, *event.access_paths)))
+        access_paths = tuple(
+            dict.fromkeys(
+                (*existing.access_paths, event.access_path, *event.access_paths)
+            )
+        )
         merged[existing_index] = VariableTraceEvent(
             variable=existing.variable,
             value=existing.value,
@@ -241,7 +264,9 @@ def _merge_duplicate_root_events(events: Sequence[VariableTraceEvent]) -> list[V
     return merged
 
 
-def _compact_event_orders(events: Sequence[VariableTraceEvent]) -> list[VariableTraceEvent]:
+def _compact_event_orders(
+    events: Sequence[VariableTraceEvent],
+) -> list[VariableTraceEvent]:
     order_by_execution: dict[tuple[int, int], int] = {}
     next_order = 1
     compacted: list[VariableTraceEvent] = []
@@ -284,8 +309,12 @@ def _augment_pop_mutation_events(
         mutation = mutation_lines.get(event.line_number)
         if mutation is not None:
             receiver_name = mutation.receiver
-            if receiver_name in last_values and _is_watched_name(receiver_name, filters):
-                synthetic_value = _simulate_pop_value(last_values[receiver_name], mutation, event.value)
+            if receiver_name in last_values and _is_watched_name(
+                receiver_name, filters
+            ):
+                synthetic_value = _simulate_pop_value(
+                    last_values[receiver_name], mutation, event.value
+                )
                 augmented.append(
                     VariableTraceEvent(
                         variable=receiver_name,

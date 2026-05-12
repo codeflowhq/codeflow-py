@@ -45,7 +45,9 @@ def build_traces(
 
 
 def _focus_path_from_frame_meta(meta: Mapping[str, Any]) -> str | None:
-    access_paths = [path for path in meta.get("access_paths", []) if isinstance(path, str)]
+    access_paths = [
+        path for path in meta.get("access_paths", []) if isinstance(path, str)
+    ]
     if access_paths:
         return max(access_paths, key=len)
     access_path = meta.get("access_path")
@@ -93,7 +95,9 @@ def visualize_traces(
         selected_steps = trace.frames if limit is None else trace.frames[:limit]
         artifacts = visualize_trace(trace, config=cfg, max_steps=max_steps)
         rendered[trace.name] = [
-            RenderedTraceFrame(step=frame.step, artifact=artifact, meta=dict(frame.meta))
+            RenderedTraceFrame(
+                step=frame.step, artifact=artifact, meta=dict(frame.meta)
+            )
             for frame, artifact in zip(selected_steps, artifacts, strict=False)
         ]
     return rendered

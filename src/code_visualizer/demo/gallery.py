@@ -113,7 +113,13 @@ def _render_tree_examples(config: VisualizerConfig) -> Any:
     return root
 
 
-def _render_nested_examples(config: VisualizerConfig, root: object, linked: object, hash_table: object, graph_snapshot: object) -> None:
+def _render_nested_examples(
+    config: VisualizerConfig,
+    root: object,
+    linked: object,
+    hash_table: object,
+    graph_snapshot: object,
+) -> None:
     nested = [
         {"tree": root},
         {"linked": linked},
@@ -151,7 +157,9 @@ def _render_tuple_and_scalar_examples(config: VisualizerConfig) -> None:
     print(f"saved: {path}")
 
 
-def _render_image_and_profile_examples(config: VisualizerConfig, root: object, graph_snapshot: object) -> str:
+def _render_image_and_profile_examples(
+    config: VisualizerConfig, root: object, graph_snapshot: object
+) -> str:
     avatar_src = OUTPUT_DIR / "nus.png"
     art = demo_visualize(str(avatar_src), name="avatar_img", config=config)
     path = save_artifact(art, "avatar_image", config=config)
@@ -161,7 +169,10 @@ def _render_image_and_profile_examples(config: VisualizerConfig, root: object, g
     avatar_value = str(avatar_src) if avatar_src.exists() else "avatar.png"
     profile_snapshot = {
         "user": {"name": "Lin", "avatar": avatar_value},
-        "history": [{"scores": [91, 88, 95]}, {"notes": {"week": "2026-W06", "trend": [1, 3, 6]}}],
+        "history": [
+            {"scores": [91, 88, 95]},
+            {"notes": {"week": "2026-W06", "trend": [1, 3, 6]}},
+        ],
     }
     art = demo_visualize(profile_snapshot, name="profile", config=config)
     path = save_artifact(art, "profile_table", config=config)
@@ -175,7 +186,9 @@ def _render_image_and_profile_examples(config: VisualizerConfig, root: object, g
     ]
     art = demo_visualize(combo_payload, name="combo", config=config)
     path = save_artifact(art, "combo_nested", config=config, fmt="png")
-    print("\n=== combo list -> nested views (tree + graph + bar + image, exported PNG) ===")
+    print(
+        "\n=== combo list -> nested views (tree + graph + bar + image, exported PNG) ==="
+    )
     print(f"saved: {path}")
     return avatar_value
 
@@ -200,7 +213,9 @@ def _render_numpy_examples(config: VisualizerConfig) -> None:
     print("\n=== numpy ndarray -> array_cells (auto) ===")
     print(f"saved: {path}")
 
-    nested_np = np.array([np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])], dtype=object)
+    nested_np = np.array(
+        [np.array([[1, 2], [3, 4]]), np.array([[5, 6], [7, 8]])], dtype=object
+    )
     art = demo_visualize(nested_np, name="nested_np", config=config)
     path = save_artifact(art, "nested_np_array", config=config)
     print("\n=== nested numpy ndarray -> nested array cells ===")
@@ -219,7 +234,12 @@ def _render_complex_auto_example(config: VisualizerConfig) -> None:
                 "step": 2,
                 "scores": [
                     0.95,
-                    {"ablation": [{"seed": 0, "value": 0.93}, {"seed": 1, "value": (0.92, {"note": "best"})}]},
+                    {
+                        "ablation": [
+                            {"seed": 0, "value": 0.93},
+                            {"seed": 1, "value": (0.92, {"note": "best"})},
+                        ]
+                    },
                 ],
             },
         ],

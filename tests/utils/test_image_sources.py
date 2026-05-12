@@ -32,14 +32,12 @@ class _FakeSource:
         return str(target)
 
 
-
 def test_image_candidate_detection_handles_paths_urls_and_data_uri() -> None:
     assert _is_image_path("avatar.PNG")
     assert _looks_like_image_candidate("https://example.com/a.jpg")
     assert _looks_like_image_candidate("data:image/png;base64,AAAA")
     assert not _looks_like_image_candidate("https://example.com/a")
     assert not _looks_like_image_candidate(123)
-
 
 
 def test_materialize_data_uri_and_detect_local_path(tmp_path: Path) -> None:
@@ -53,8 +51,9 @@ def test_materialize_data_uri_and_detect_local_path(tmp_path: Path) -> None:
     assert _detect_image_source(image_path) == str(image_path.resolve())
 
 
-
-def test_detect_image_source_strict_errors_and_remote_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_detect_image_source_strict_errors_and_remote_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     with pytest.raises(VisualizationImageError):
         _detect_image_source("", strict=True)
     with pytest.raises(VisualizationImageError):
@@ -63,10 +62,14 @@ def test_detect_image_source_strict_errors_and_remote_fallback(monkeypatch: pyte
         _detect_image_source("notes.txt", strict=True)
 
     monkeypatch.setattr(image_sources, "_is_pyodide_runtime", lambda: False)
-    monkeypatch.setattr(image_sources, "_download_remote_image", lambda url: (None, "blocked"))
-    assert _detect_image_source("https://example.com/a.png", strict=True) == "https://example.com/a.png"
+    monkeypatch.setattr(
+        image_sources, "_download_remote_image", lambda url: (None, "blocked")
+    )
+    assert (
+        _detect_image_source("https://example.com/a.png", strict=True)
+        == "https://example.com/a.png"
+    )
     assert _detect_image_source("https://example.com/a.png") is None
-
 
 
 def test_image_html_and_dot_render(monkeypatch: pytest.MonkeyPatch) -> None:

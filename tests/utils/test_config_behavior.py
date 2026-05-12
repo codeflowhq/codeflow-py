@@ -19,7 +19,6 @@ def test_visualizer_config_output_and_step_limit_precedence() -> None:
     assert config.step_limit_for("missing") == 7
 
 
-
 def test_visualizer_config_copy_and_with_converters_preserve_value_semantics() -> None:
     config = default_visualizer_config()
     copied = config.copy()
@@ -32,8 +31,10 @@ def test_visualizer_config_copy_and_with_converters_preserve_value_semantics() -
 
     updated = config.with_converters(lambda value: (True, value), prepend=True)
     assert updated is not config
-    assert len(updated.converter_pipeline.converters) == len(config.converter_pipeline.converters) + 1
-
+    assert (
+        len(updated.converter_pipeline.converters)
+        == len(config.converter_pipeline.converters) + 1
+    )
 
 
 def test_merge_override_map_normalizes_string_views() -> None:

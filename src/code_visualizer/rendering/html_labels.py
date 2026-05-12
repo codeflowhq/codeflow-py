@@ -4,7 +4,9 @@ from collections.abc import Mapping
 from html import escape as html_escape
 
 
-def html_attrs(attrs: Mapping[str, object | None] | None = None, /, **kwargs: object | None) -> str:
+def html_attrs(
+    attrs: Mapping[str, object | None] | None = None, /, **kwargs: object | None
+) -> str:
     merged: dict[str, object | None] = {}
     if attrs:
         merged.update(attrs)
@@ -13,27 +15,56 @@ def html_attrs(attrs: Mapping[str, object | None] | None = None, /, **kwargs: ob
     return "".join(parts)
 
 
-def html_tag(tag: str, content: str, attrs: Mapping[str, object | None] | None = None, /, **kwargs: object | None) -> str:
+def html_tag(
+    tag: str,
+    content: str,
+    attrs: Mapping[str, object | None] | None = None,
+    /,
+    **kwargs: object | None,
+) -> str:
     return f"<{tag}{html_attrs(attrs, **kwargs)}>{content}</{tag}>"
 
 
-def html_table(*rows: str, attrs: Mapping[str, object | None] | None = None, **kwargs: object | None) -> str:
+def html_table(
+    *rows: str,
+    attrs: Mapping[str, object | None] | None = None,
+    **kwargs: object | None,
+) -> str:
     return html_tag("table", "".join(rows), attrs, **kwargs)
 
 
-def html_row(*cells: str, attrs: Mapping[str, object | None] | None = None, **kwargs: object | None) -> str:
+def html_row(
+    *cells: str,
+    attrs: Mapping[str, object | None] | None = None,
+    **kwargs: object | None,
+) -> str:
     return html_tag("tr", "".join(cells), attrs, **kwargs)
 
 
-def html_cell(content: str, attrs: Mapping[str, object | None] | None = None, /, **kwargs: object | None) -> str:
+def html_cell(
+    content: str,
+    attrs: Mapping[str, object | None] | None = None,
+    /,
+    **kwargs: object | None,
+) -> str:
     return html_tag("td", content, attrs, **kwargs)
 
 
-def html_font(content: str, attrs: Mapping[str, object | None] | None = None, /, **kwargs: object | None) -> str:
+def html_font(
+    content: str,
+    attrs: Mapping[str, object | None] | None = None,
+    /,
+    **kwargs: object | None,
+) -> str:
     return html_tag("font", content, attrs, **kwargs)
 
 
-def html_img(src: str, attrs: Mapping[str, object | None] | None = None, /, **kwargs: object | None) -> str:
+def html_img(
+    src: str,
+    attrs: Mapping[str, object | None] | None = None,
+    /,
+    **kwargs: object | None,
+) -> str:
     merged: dict[str, object | None] = {"SRC": html_escape(src, quote=True)}
     if attrs:
         merged.update(attrs)

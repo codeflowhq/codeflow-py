@@ -33,7 +33,6 @@ def _runtime(*, resolver=None) -> ViewBuildContext:
     )
 
 
-
 def test_bar_view_builds_empty_and_truncated_graph() -> None:
     root_id, empty_graph = build_graph_view([], "data", ViewKind.BAR, 2, item_limit=2)
     assert root_id == "bar_exp_1"
@@ -45,13 +44,11 @@ def test_bar_view_builds_empty_and_truncated_graph() -> None:
     assert "bar_more_data" in graph.nodes
 
 
-
 def test_bar_view_rejects_non_numeric_entries() -> None:
     with pytest.raises(TypeError):
         build_graph_view([1, True], "data", ViewKind.BAR, 2, item_limit=5)
     with pytest.raises(TypeError):
         build_graph_view({"a": 1}, "data", ViewKind.BAR, 2, item_limit=5)
-
 
 
 def test_legacy_nested_view_prefers_expected_structures() -> None:
@@ -64,16 +61,17 @@ def test_legacy_nested_view_prefers_expected_structures() -> None:
     assert legacy_nested_view(runtime, _TreeNode(1, [_TreeNode(2)])) is ViewKind.TREE
 
 
-
 def test_select_nested_view_honors_configured_and_fallback_resolution() -> None:
     runtime = _runtime(resolver=lambda name, original, coerced: (ViewKind.TABLE, True))
     assert select_nested_view(runtime, "data", {"a": 1}, {"a": 1}, 2) is ViewKind.TABLE
     assert select_nested_view(runtime, "data", {"a": 1}, {"a": 1}, 0) is None
 
     fallback_runtime = _runtime(resolver=None)
-    assert select_nested_view(fallback_runtime, "data", [1, 2], [1, 2], 2) is ViewKind.ARRAY_CELLS
+    assert (
+        select_nested_view(fallback_runtime, "data", [1, 2], [1, 2], 2)
+        is ViewKind.ARRAY_CELLS
+    )
     assert select_nested_view(fallback_runtime, "data", {"a": 1}, {"a": 1}, 2) is None
-
 
 
 def test_experimental_array_nested_resolver_promotes_plain_lists_to_node_view() -> None:

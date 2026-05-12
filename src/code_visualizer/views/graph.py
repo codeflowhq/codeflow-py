@@ -40,7 +40,9 @@ def _normalize_graph_node_entry(entry: Any) -> tuple[Any, Any]:
     return entry, entry
 
 
-def _graph_data_from_mapping(value: Any) -> tuple[list[tuple[Any, Any]], list[tuple[Any, Any, Any]], bool] | None:  # noqa: C901
+def _graph_data_from_mapping(  # noqa: C901
+    value: Any,
+) -> tuple[list[tuple[Any, Any]], list[tuple[Any, Any, Any]], bool] | None:
     if not isinstance(value, Mapping):
         return None
     edges_raw = value.get("edges")
@@ -74,30 +76,45 @@ def _graph_data_from_mapping(value: Any) -> tuple[list[tuple[Any, Any]], list[tu
         if key not in {k for k, _ in entries}:
             entries.append((key, seen_keys[key]))
     if not entries:
-        derived_nodes = sorted({src for src, _, _ in edges} | {dst for _, dst, _ in edges})
+        derived_nodes = sorted(
+            {src for src, _, _ in edges} | {dst for _, dst, _ in edges}
+        )
         entries = [(node, node) for node in derived_nodes]
     return entries, edges, directed
 
 
-def _extract_graph_data(value: Any) -> tuple[list[tuple[Any, Any]], list[tuple[Any, Any, Any]], bool] | None:
+def _extract_graph_data(
+    value: Any,
+) -> tuple[list[tuple[Any, Any]], list[tuple[Any, Any, Any]], bool] | None:
     nk = _try_networkx_edges_nodes(value)
     if nk is not None:
         nodes, edges, directed = nk
         normalized_nodes: list[tuple[Any, Any]] = []
         for node_key, attrs in nodes:
-            payload = attrs.get("value") or attrs.get("label") or attrs.get("data") or (attrs if attrs else node_key)
+            payload = (
+                attrs.get("value")
+                or attrs.get("label")
+                or attrs.get("data")
+                or (attrs if attrs else node_key)
+            )
             normalized_nodes.append((node_key, payload))
-        normalized_edges = [(u, v, _edge_label_from_attrs(attrs)) for u, v, attrs in edges]
+        normalized_edges = [
+            (u, v, _edge_label_from_attrs(attrs)) for u, v, attrs in edges
+        ]
         return normalized_nodes, normalized_edges, directed
     if _looks_like_graph_mapping(value):
         return _graph_data_from_mapping(value)
     return None
 
 
-def build_graph_view_entry(runtime: ViewBuildContext, value: Any, name: str, depth: int) -> str:
+def build_graph_view_entry(
+    runtime: ViewBuildContext, value: Any, name: str, depth: int
+) -> str:
     graph_data = _extract_graph_data(value)
     if graph_data is None:
-        raise TypeError("graph view expects a networkx graph or mapping with nodes/edges")
+        raise TypeError(
+            "graph view expects a networkx graph or mapping with nodes/edges"
+        )
 
     nodes, edges, directed = graph_data
     item_limit = runtime.item_limit
@@ -111,7 +128,15 @@ def build_graph_view_entry(runtime: ViewBuildContext, value: Any, name: str, dep
             container_id,
             NodeKind.OBJECT,
             "",
-            {"kind": "graph_root", "node_attrs": {"shape": "point", "style": "invis", "width": "0.01", "height": "0.01"}},
+            {
+                "kind": "graph_root",
+                "node_attrs": {
+                    "shape": "point",
+                    "style": "invis",
+                    "width": "0.01",
+                    "height": "0.01",
+                },
+            },
         )
     )
 
@@ -143,7 +168,9 @@ def build_graph_view_entry(runtime: ViewBuildContext, value: Any, name: str, dep
         edge_meta: dict[str, Any] = {}
         if not directed:
             edge_meta["edge_attrs"] = {"dir": "none"}
-        g.add_edge(VisualEdge(sid, did, type=EdgeKind.LINK, label=label, meta=edge_meta))
+        g.add_edge(
+            VisualEdge(sid, did, type=EdgeKind.LINK, label=label, meta=edge_meta)
+        )
 
     if node_ids:
         for node_id in node_ids:

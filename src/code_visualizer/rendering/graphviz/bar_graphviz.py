@@ -10,7 +10,9 @@ from ...utils.value_shapes import _is_list_numbers
 from ..theme import BG_BAR_NEGATIVE_SOFT, BG_BAR_POSITIVE_SOFT, TEXT_INDEX, TEXT_PRIMARY
 
 
-def render_graphviz_bar(arr: list[Any], title: str = "bar", *, max_items: int = 50) -> str:
+def render_graphviz_bar(
+    arr: list[Any], title: str = "bar", *, max_items: int = 50
+) -> str:
     if not _is_list_numbers(arr):
         raise TypeError("bar expects list[number]")
     labels = [str(index) for index, _ in enumerate(arr[:max_items])]
@@ -23,7 +25,10 @@ def render_graphviz_bar(arr: list[Any], title: str = "bar", *, max_items: int = 
     dot.attr("graph", labelloc="t", label=dot_escape_label(title))
     dot.attr("node", shape="plain")
     if not labels:
-        dot.node("bars", label=f'<<table id="{_stable_svg_id(title, "wrapper")}" border="0"><tr><td id="{_stable_svg_id(title, "value", "empty")}">∅</td></tr></table>>')
+        dot.node(
+            "bars",
+            label=f'<<table id="{_stable_svg_id(title, "wrapper")}" border="0"><tr><td id="{_stable_svg_id(title, "value", "empty")}">∅</td></tr></table>>',
+        )
         return str(dot.source)
 
     max_abs = max((abs(number) for number in values), default=1.0) or 1.0
@@ -43,7 +48,9 @@ def render_graphviz_bar(arr: list[Any], title: str = "bar", *, max_items: int = 
             f"<tr><td align='center'><font point-size='9' color='{TEXT_INDEX}'>{label}</font></td></tr>"
             "</table>"
         )
-        table.append(f"<td id='{_stable_svg_id(title, 'bar', label)}' valign='bottom'>{inner}</td>")
+        table.append(
+            f"<td id='{_stable_svg_id(title, 'bar', label)}' valign='bottom'>{inner}</td>"
+        )
     table.append("</tr></table>")
     dot.node("bars", label=f"<{''.join(table)}>")
     return str(dot.source)

@@ -25,7 +25,10 @@ def build_tictactoe_tree() -> dict[str, Any]:
             {"board": [["", "", ""], ["", "O", ""], ["", "", "X"]], "children": []},
         ],
     }
-    return {"board": [["", "", ""], ["", "", ""], ["", "", ""]], "children": [x_corner, x_center, x_bottom]}
+    return {
+        "board": [["", "", ""], ["", "", ""], ["", "", ""]],
+        "children": [x_corner, x_center, x_bottom],
+    }
 
 
 def build_shortest_path_usecase() -> dict[str, Any]:
@@ -50,10 +53,38 @@ def build_shortest_path_usecase() -> dict[str, Any]:
     }
     frontier_frames = [
         {"iter": 0, "frontier": [{"node": "A", "dist": 0}], "visited": []},
-        {"iter": 1, "frontier": [{"node": "B", "dist": 2}, {"node": "C", "dist": 4}], "visited": ["A"], "relaxations": [{"edge": "A->B", "new": 2}, {"edge": "A->C", "new": 4}]},
-        {"iter": 2, "frontier": [{"node": "C", "dist": 3}, {"node": "E", "dist": 4}, {"node": "D", "dist": 9}], "visited": ["A", "B"], "relaxations": [{"edge": "B->C", "new": 3}, {"edge": "B->E", "new": 4}, {"edge": "B->D", "new": 9}]},
-        {"iter": 3, "frontier": [{"node": "E", "dist": 4}, {"node": "D", "dist": 6}], "visited": ["A", "B", "C"], "relaxations": [{"edge": "C->D", "new": 6}]},
-        {"iter": 4, "frontier": [{"node": "D", "dist": 6}], "visited": ["A", "B", "C", "E"], "relaxations": [{"edge": "E->D", "new": 6}]},
+        {
+            "iter": 1,
+            "frontier": [{"node": "B", "dist": 2}, {"node": "C", "dist": 4}],
+            "visited": ["A"],
+            "relaxations": [{"edge": "A->B", "new": 2}, {"edge": "A->C", "new": 4}],
+        },
+        {
+            "iter": 2,
+            "frontier": [
+                {"node": "C", "dist": 3},
+                {"node": "E", "dist": 4},
+                {"node": "D", "dist": 9},
+            ],
+            "visited": ["A", "B"],
+            "relaxations": [
+                {"edge": "B->C", "new": 3},
+                {"edge": "B->E", "new": 4},
+                {"edge": "B->D", "new": 9},
+            ],
+        },
+        {
+            "iter": 3,
+            "frontier": [{"node": "E", "dist": 4}, {"node": "D", "dist": 6}],
+            "visited": ["A", "B", "C"],
+            "relaxations": [{"edge": "C->D", "new": 6}],
+        },
+        {
+            "iter": 4,
+            "frontier": [{"node": "D", "dist": 6}],
+            "visited": ["A", "B", "C", "E"],
+            "relaxations": [{"edge": "E->D", "new": 6}],
+        },
         {"iter": 5, "frontier": [], "visited": ["A", "B", "C", "E", "D"], "done": True},
     ]
     dist_table = {
@@ -63,5 +94,27 @@ def build_shortest_path_usecase() -> dict[str, Any]:
         "E": {"dist": 4, "prev": "B"},
         "D": {"dist": 6, "prev": "C"},
     }
-    path_tree = {"label": "A", "children": [{"label": "B (2)", "children": [{"label": "C (3)", "children": [{"label": "D (6)", "children": []}]}, {"label": "E (4)", "children": [{"label": "D (6)", "children": []}]}]}]}
-    return {"graph": graph, "frontier_frames": frontier_frames, "best_dist": dist_table, "path_tree": path_tree}
+    path_tree = {
+        "label": "A",
+        "children": [
+            {
+                "label": "B (2)",
+                "children": [
+                    {
+                        "label": "C (3)",
+                        "children": [{"label": "D (6)", "children": []}],
+                    },
+                    {
+                        "label": "E (4)",
+                        "children": [{"label": "D (6)", "children": []}],
+                    },
+                ],
+            }
+        ],
+    }
+    return {
+        "graph": graph,
+        "frontier_frames": frontier_frames,
+        "best_dist": dist_table,
+        "path_tree": path_tree,
+    }

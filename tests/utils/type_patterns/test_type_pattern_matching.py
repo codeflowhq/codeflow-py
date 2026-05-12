@@ -28,6 +28,8 @@ def test_match_type_pattern_override_matches_tree_pattern() -> None:
 
 
 def test_match_named_override_ignores_spacing() -> None:
-    view = _match_named_override('data["users"]', {' data [ "users" ] ': ViewKind.TABLE})
+    view = _match_named_override(
+        'data["users"]', {' data [ "users" ] ': ViewKind.TABLE}
+    )
 
     assert view is ViewKind.TABLE

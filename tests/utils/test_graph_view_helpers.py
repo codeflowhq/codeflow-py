@@ -25,7 +25,6 @@ def test_graph_data_from_mapping_supports_multiple_shapes() -> None:
     assert directed is False
 
 
-
 def test_extract_graph_data_supports_networkx_when_available() -> None:
     nx = pytest.importorskip("networkx")
     graph = nx.Graph()
@@ -41,7 +40,6 @@ def test_extract_graph_data_supports_networkx_when_available() -> None:
     assert directed is False
 
 
-
 def test_build_graph_view_entry_renders_directed_and_undirected_graphs() -> None:
     _, graph = build_graph_view(
         {"nodes": ["A", "B"], "edges": [("A", "B", "ab")], "directed": False},
@@ -55,7 +53,6 @@ def test_build_graph_view_entry_renders_directed_and_undirected_graphs() -> None
     assert "ab" in labels
     undirected_edges = [edge for edge in graph.edges if edge.type is EdgeKind.LINK]
     assert undirected_edges[0].meta["edge_attrs"]["dir"] == "none"
-
 
 
 def test_build_graph_view_rejects_invalid_input() -> None:

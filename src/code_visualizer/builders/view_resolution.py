@@ -22,7 +22,9 @@ def make_value_coercer(config: VisualizerConfig) -> Callable[[Any], Any]:
     return _coerce
 
 
-def apply_view_override(name: str, value: Any, view_map: ViewOverrideMap | None) -> ViewKind | None:
+def apply_view_override(
+    name: str, value: Any, view_map: ViewOverrideMap | None
+) -> ViewKind | None:
     if not view_map:
         return None
     if name in view_map:

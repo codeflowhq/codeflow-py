@@ -21,7 +21,6 @@ class _Object:
         self.child = child
 
 
-
 def _event(**overrides: object) -> VariableTraceEvent:
     base = dict(
         variable="data",
@@ -38,13 +37,11 @@ def _event(**overrides: object) -> VariableTraceEvent:
     return VariableTraceEvent(**base)
 
 
-
 def test_literal_arg_only_accepts_ast_constants() -> None:
     import ast
 
     assert _literal_arg(ast.parse("1", mode="eval").body) == (True, 1)
     assert _literal_arg(ast.parse("x", mode="eval").body) == (False, None)
-
 
 
 def test_pop_mutation_receivers_collects_popleft_and_pop_assignments() -> None:
@@ -67,7 +64,6 @@ noop(queue.pop())
     assert 4 not in mutations
 
 
-
 def test_extract_access_path_value_supports_subscript_and_attribute() -> None:
     root = {"items": [{"name": "a"}], "obj": _Object(child=_Object(child=3))}
 
@@ -75,7 +71,6 @@ def test_extract_access_path_value_supports_subscript_and_attribute() -> None:
     assert _extract_access_path_value(root, "data.obj.child.child", "data") == 3
     assert _extract_access_path_value(root, "other['items']", "data") is not None
     assert _extract_access_path_value(root, "data[dynamic]", "data") != "a"
-
 
 
 def test_project_expression_watch_events_keeps_root_and_projects_child() -> None:
@@ -86,7 +81,9 @@ def test_project_expression_watch_events_keeps_root_and_projects_child() -> None
     )
     filters = [
         WatchFilter(name="data"),
-        WatchFilter(name="data", access_path="data['items']", trace_name="data['items']"),
+        WatchFilter(
+            name="data", access_path="data['items']", trace_name="data['items']"
+        ),
     ]
 
     projected = _project_expression_watch_events([event], filters)
@@ -96,15 +93,25 @@ def test_project_expression_watch_events_keeps_root_and_projects_child() -> None
     assert projected[1].access_path == "data['items'][1]['name']"
 
 
-
 def test_simulate_pop_value_handles_common_container_types() -> None:
-    assert _simulate_pop_value([1, 2, 3], _pop_mutation_receivers("x = items.pop()\n")[1], 3) == [1, 2]
-    assert _simulate_pop_value((1, 2, 3), _pop_mutation_receivers("x = items.pop(0)\n")[1], 1) == (2, 3)
-    assert _simulate_pop_value(deque([1, 2]), _pop_mutation_receivers("x = items.popleft()\n")[1], 1) == deque([2])
-    assert _simulate_pop_value({"a": 1, "b": 2}, _pop_mutation_receivers("x = items.pop('a')\n")[1], 1) == {"b": 2}
-    assert _simulate_pop_value({1, 2}, _pop_mutation_receivers("x = items.pop()\n")[1], 1) == {2}
-    assert _simulate_pop_value(frozenset({1, 2}), _pop_mutation_receivers("x = items.pop()\n")[1], 1) == frozenset({2})
-
+    assert _simulate_pop_value(
+        [1, 2, 3], _pop_mutation_receivers("x = items.pop()\n")[1], 3
+    ) == [1, 2]
+    assert _simulate_pop_value(
+        (1, 2, 3), _pop_mutation_receivers("x = items.pop(0)\n")[1], 1
+    ) == (2, 3)
+    assert _simulate_pop_value(
+        deque([1, 2]), _pop_mutation_receivers("x = items.popleft()\n")[1], 1
+    ) == deque([2])
+    assert _simulate_pop_value(
+        {"a": 1, "b": 2}, _pop_mutation_receivers("x = items.pop('a')\n")[1], 1
+    ) == {"b": 2}
+    assert _simulate_pop_value(
+        {1, 2}, _pop_mutation_receivers("x = items.pop()\n")[1], 1
+    ) == {2}
+    assert _simulate_pop_value(
+        frozenset({1, 2}), _pop_mutation_receivers("x = items.pop()\n")[1], 1
+    ) == frozenset({2})
 
 
 def test_merge_duplicate_root_events_unions_access_paths() -> None:
@@ -115,7 +122,6 @@ def test_merge_duplicate_root_events_unions_access_paths() -> None:
 
     assert len(merged) == 1
     assert merged[0].access_paths == ("data['a']", "data['b']")
-
 
 
 def test_compact_event_orders_reuses_order_for_same_execution_and_line() -> None:
@@ -130,11 +136,27 @@ def test_compact_event_orders_reuses_order_for_same_execution_and_line() -> None
     assert [item.order for item in compacted] == [1, 1, 2]
 
 
-
 def test_augment_pop_mutation_events_inserts_synthetic_receiver_snapshot() -> None:
     events = [
-        _event(variable="queue", value=deque(["A"]), line_number=1, execution_id=1, var_id=1, access_path="queue", access_paths=("queue",)),
-        _event(variable="node", value="A", line_number=2, execution_id=2, var_id=2, access_path="node", order=2, access_paths=("node",)),
+        _event(
+            variable="queue",
+            value=deque(["A"]),
+            line_number=1,
+            execution_id=1,
+            var_id=1,
+            access_path="queue",
+            access_paths=("queue",),
+        ),
+        _event(
+            variable="node",
+            value="A",
+            line_number=2,
+            execution_id=2,
+            var_id=2,
+            access_path="node",
+            order=2,
+            access_paths=("node",),
+        ),
     ]
 
     augmented = _augment_pop_mutation_events(

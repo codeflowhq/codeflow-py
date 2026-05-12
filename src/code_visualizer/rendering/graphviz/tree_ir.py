@@ -32,7 +32,9 @@ class _TreeBuilder:
             return hashlib.blake2s(payload.encode("utf-8"), digest_size=8).hexdigest()
 
         raw_label, children = info
-        child_signatures = ",".join(sorted(self.subtree_signature(child) for child in children))
+        child_signatures = ",".join(
+            sorted(self.subtree_signature(child) for child in children)
+        )
         payload = f"tree|{type(node).__name__}|{raw_label!r}|{child_signatures}"
         return hashlib.blake2s(payload.encode("utf-8"), digest_size=8).hexdigest()
 
@@ -56,7 +58,9 @@ class _TreeBuilder:
             return node_id
         info = self.tree_info(node)
         raw_label = info[0] if info is not None else node
-        label_text, is_html = _format_value_label(raw_label, self.nested_depth, self.max_items)
+        label_text, is_html = _format_value_label(
+            raw_label, self.nested_depth, self.max_items
+        )
         meta: dict[str, Any] = {"kind": "tree_node", "node_attrs": {"shape": "circle"}}
         if is_html:
             meta["html_label"] = True
@@ -72,7 +76,9 @@ class _TreeBuilder:
         src_id = self.ensure_node(node)
         for child in children:
             child_id = self.ensure_node(child)
-            self.graph.add_edge(VisualEdge(src_id, child_id, type=EdgeKind.CONTAINS, label=None))
+            self.graph.add_edge(
+                VisualEdge(src_id, child_id, type=EdgeKind.CONTAINS, label=None)
+            )
             stack.append(child)
 
 
@@ -86,7 +92,9 @@ def build_tree(
 ) -> tuple[str, VisualGraph]:
     del name
     graph = VisualGraph()
-    builder = _TreeBuilder(graph=graph, nested_depth=nested_depth, max_items=max_items, max_nodes=max_nodes)
+    builder = _TreeBuilder(
+        graph=graph, nested_depth=nested_depth, max_items=max_items, max_nodes=max_nodes
+    )
 
     root_id = builder.ensure_node(root)
     stack = [root]
@@ -104,7 +112,11 @@ def build_tree(
 
     if stack:
         ellipsis_id = "CUT"
-        graph.add_node(VisualNode(ellipsis_id, NodeKind.ELLIPSIS, "… (cutoff)", {"cutoff": True}))
-        graph.add_edge(VisualEdge(root_id, ellipsis_id, type=EdgeKind.CONTAINS, label=None))
+        graph.add_node(
+            VisualNode(ellipsis_id, NodeKind.ELLIPSIS, "… (cutoff)", {"cutoff": True})
+        )
+        graph.add_edge(
+            VisualEdge(root_id, ellipsis_id, type=EdgeKind.CONTAINS, label=None)
+        )
 
     return root_id, graph

@@ -8,7 +8,9 @@ from .context import ViewBuildContext
 from .graph_layout import attach_view_title, merge_visual_graph, new_node_id
 
 
-def build_tree_view(runtime: ViewBuildContext, value: Any, name: str, depth: int) -> str:
+def build_tree_view(
+    runtime: ViewBuildContext, value: Any, name: str, depth: int
+) -> str:
     root_hint, tg = build_tree(
         value,
         name=name,

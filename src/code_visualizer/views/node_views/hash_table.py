@@ -36,7 +36,9 @@ from .hash_table_helpers import (
 )
 
 
-def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: Any, name: str, depth: int) -> str:
+def build_hash_table_view_node_heads_chains(
+    runtime: ViewBuildContext, value: Any, name: str, depth: int
+) -> str:
     logical_name = name.split(" [step ", 1)[0]
     if not isinstance(value, list):
         raise TypeError("hash_table_node view expects list input")
@@ -46,7 +48,9 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
     depth_budget = max(0, depth)
     preview_depth = depth_budget - 1 if depth_budget > 0 else 0
     limit = min(len(value), item_limit)
-    focus_idx, focus_item_idx = hash_table_focus_indices(runtime.focus_path, logical_name)
+    focus_idx, focus_item_idx = hash_table_focus_indices(
+        runtime.focus_path, logical_name
+    )
 
     configure_hash_table_graph(graph, name, show_titles=runtime.show_titles)
 
@@ -56,7 +60,15 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
             root_id,
             NodeKind.OBJECT,
             "",
-            {"kind": "hash_root", "node_attrs": {"shape": "point", "style": "invis", "width": "0.01", "height": "0.01"}},
+            {
+                "kind": "hash_root",
+                "node_attrs": {
+                    "shape": "point",
+                    "style": "invis",
+                    "width": "0.01",
+                    "height": "0.01",
+                },
+            },
         )
     )
 
@@ -68,7 +80,12 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
             "",
             {
                 "kind": "hash_head_anchor",
-                "node_attrs": {"shape": "point", "style": "invis", "width": "0.01", "height": "0.01"},
+                "node_attrs": {
+                    "shape": "point",
+                    "style": "invis",
+                    "width": "0.01",
+                    "height": "0.01",
+                },
             },
         )
     )
@@ -93,7 +110,13 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
                 head_anchor_id,
                 bucket_id,
                 type=EdgeKind.LAYOUT,
-                meta={"edge_attrs": {"style": "invis", "constraint": "false", "weight": "12"}},
+                meta={
+                    "edge_attrs": {
+                        "style": "invis",
+                        "constraint": "false",
+                        "weight": "12",
+                    }
+                },
             )
         )
         if prev_head_id is not None:
@@ -102,12 +125,20 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
                     prev_head_id,
                     bucket_id,
                     type=EdgeKind.LAYOUT,
-                    meta={"edge_attrs": {"style": "invis", "constraint": "false", "weight": "4"}},
+                    meta={
+                        "edge_attrs": {
+                            "style": "invis",
+                            "constraint": "false",
+                            "weight": "4",
+                        }
+                    },
                 )
             )
         prev_head_id = bucket_id
 
-        bucket_items = bucket if isinstance(bucket, list) else ([] if bucket is None else [bucket])
+        bucket_items = (
+            bucket if isinstance(bucket, list) else ([] if bucket is None else [bucket])
+        )
         if not bucket_items:
             continue
 
@@ -115,9 +146,15 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
         prev_chain_node_id = bucket_id
         for item_idx in range(chain_limit):
             item = bucket_items[item_idx]
-            chain_focus = focus_idx is not None and focus_idx == idx and (focus_item_idx is None or focus_item_idx == item_idx)
+            chain_focus = (
+                focus_idx is not None
+                and focus_idx == idx
+                and (focus_item_idx is None or focus_item_idx == item_idx)
+            )
 
-            item_preview = render_nested_preview(item, preview_depth, item_limit, f"{name}[{idx}][{item_idx}]")
+            item_preview = render_nested_preview(
+                item, preview_depth, item_limit, f"{name}[{idx}][{item_idx}]"
+            )
             if not item_preview:
                 if _is_scalar_value(item):
                     item_preview = _format_scalar_html(item)
@@ -125,7 +162,9 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
                     item_preview = _format_container_stub(item)
             item_preview = flatten_nested_preview_frame(item_preview)
 
-            chain_node = hash_chain_node(logical_name, idx, item_idx, item_preview, chain_focus=chain_focus)
+            chain_node = hash_chain_node(
+                logical_name, idx, item_idx, item_preview, chain_focus=chain_focus
+            )
             chain_node_id = chain_node.id
             graph.add_node(chain_node)
             graph.add_edge(
@@ -133,7 +172,13 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
                     prev_chain_node_id,
                     chain_node_id,
                     type=EdgeKind.LAYOUT,
-                    meta={"edge_attrs": {"color": BORDER_CHAIN, "penwidth": "1.0", "arrowhead": "normal"}},
+                    meta={
+                        "edge_attrs": {
+                            "color": BORDER_CHAIN,
+                            "penwidth": "1.0",
+                            "arrowhead": "normal",
+                        }
+                    },
                 )
             )
             prev_chain_node_id = chain_node_id
@@ -142,7 +187,12 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
             more_id = safe_dot_token("hash_more", logical_name, idx)
             more_label = html_single_cell_table(
                 html_font("…", {"color": ELLIPSIS_TEXT}),
-                table_attrs={"border": "1", "cellborder": "1", "cellspacing": "0", "cellpadding": "4"},
+                table_attrs={
+                    "border": "1",
+                    "cellborder": "1",
+                    "cellspacing": "0",
+                    "cellpadding": "4",
+                },
                 align="center",
                 bgcolor=BG_PANEL,
             )
@@ -167,7 +217,13 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
                     prev_chain_node_id,
                     more_id,
                     type=EdgeKind.LAYOUT,
-                    meta={"edge_attrs": {"color": TEXT_NULL, "style": "dashed", "arrowhead": "normal"}},
+                    meta={
+                        "edge_attrs": {
+                            "color": TEXT_NULL,
+                            "style": "dashed",
+                            "arrowhead": "normal",
+                        }
+                    },
                 )
             )
 
@@ -185,7 +241,15 @@ def build_hash_table_view_node_heads_chains(runtime: ViewBuildContext, value: An
                 empty_id,
                 NodeKind.OBJECT,
                 empty_label,
-                {"html_label": True, "rank": "hash_empty", "node_attrs": {"shape": "plain", "color": BORDER_DEFAULT, "penwidth": "1.0"}},
+                {
+                    "html_label": True,
+                    "rank": "hash_empty",
+                    "node_attrs": {
+                        "shape": "plain",
+                        "color": BORDER_DEFAULT,
+                        "penwidth": "1.0",
+                    },
+                },
             )
         )
         graph.add_edge(

@@ -18,7 +18,6 @@ class _NoDict:
     __slots__ = ()
 
 
-
 def test_scalar_labels_respect_repr_and_pretty_options() -> None:
     pretty = VisualIRExtractor(ExtractOptions(max_str_len=6, string_style="pretty"))
     repr_style = VisualIRExtractor(ExtractOptions(max_str_len=6, string_style="repr"))
@@ -30,7 +29,6 @@ def test_scalar_labels_respect_repr_and_pretty_options() -> None:
     assert any("'abc..." in node.label for node in repr_graph.nodes.values())
 
 
-
 def test_extract_handles_empty_and_truncated_containers() -> None:
     extractor = VisualIRExtractor(ExtractOptions(max_items=1, max_depth=5))
 
@@ -39,30 +37,35 @@ def test_extract_handles_empty_and_truncated_containers() -> None:
     assert any(node.label == "… (+1 entries)" for node in dict_graph.nodes.values())
 
     list_graph = extractor.extract([1, 2])
-    assert any(edge.type is EdgeKind.INDEX and edge.label == "0" for edge in list_graph.edges)
+    assert any(
+        edge.type is EdgeKind.INDEX and edge.label == "0" for edge in list_graph.edges
+    )
     assert any(node.label == "… (+1 items)" for node in list_graph.nodes.values())
 
     empty_graph = extractor.extract(set())
     assert any(node.meta.get("empty") is True for node in empty_graph.nodes.values())
 
 
-
 def test_extract_handles_object_attrs_and_attr_limit() -> None:
-    extractor = VisualIRExtractor(ExtractOptions(max_items=2, include_object_attrs=True))
+    extractor = VisualIRExtractor(
+        ExtractOptions(max_items=2, include_object_attrs=True)
+    )
     graph = extractor.extract(_Attrs(), name="obj")
 
-    assert any(edge.type is EdgeKind.ATTR and edge.label == "left" for edge in graph.edges)
+    assert any(
+        edge.type is EdgeKind.ATTR and edge.label == "left" for edge in graph.edges
+    )
     assert any(node.label == "… (+1 attrs)" for node in graph.nodes.values())
 
 
-
 def test_extract_skips_attrs_when_disabled_or_no_dict() -> None:
-    disabled = VisualIRExtractor(ExtractOptions(include_object_attrs=False)).extract(_Attrs())
+    disabled = VisualIRExtractor(ExtractOptions(include_object_attrs=False)).extract(
+        _Attrs()
+    )
     assert not any(edge.type is EdgeKind.ATTR for edge in disabled.edges)
 
     nodict = VisualIRExtractor().extract(_NoDict())
     assert not any(edge.type is EdgeKind.ATTR for edge in nodict.edges)
-
 
 
 def test_extract_networkx_graph_when_available() -> None:
@@ -73,4 +76,6 @@ def test_extract_networkx_graph_when_available() -> None:
     visual = VisualIRExtractor().extract(graph, name="g")
 
     assert any(node.meta.get("graph") == "networkx" for node in visual.nodes.values())
-    assert any(edge.type is EdgeKind.REF and edge.label == "edge" for edge in visual.edges)
+    assert any(
+        edge.type is EdgeKind.REF and edge.label == "edge" for edge in visual.edges
+    )

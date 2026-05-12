@@ -18,11 +18,19 @@ class WatchFilter:
     def matches(self, snapshot: Any) -> bool:
         if self.name is not None and getattr(snapshot, "name", None) != self.name:
             return False
-        if not access_path_matches(self.access_path, getattr(snapshot, "access_path", None)):
+        if not access_path_matches(
+            self.access_path, getattr(snapshot, "access_path", None)
+        ):
             return False
-        if self.scope_id is not None and getattr(snapshot, "scope_id", None) != self.scope_id:
+        if (
+            self.scope_id is not None
+            and getattr(snapshot, "scope_id", None) != self.scope_id
+        ):
             return False
-        if self.line_number is not None and getattr(snapshot, "line_number", None) != self.line_number:
+        if (
+            self.line_number is not None
+            and getattr(snapshot, "line_number", None) != self.line_number
+        ):
             return False
         return True
 
@@ -45,10 +53,14 @@ def access_path_matches(expected: str | None, actual: str | None) -> bool:
         return False
     if normalized_actual == normalized_expected:
         return True
-    return normalized_actual.startswith(normalized_expected + "[") or normalized_actual.startswith(normalized_expected + ".")
+    return normalized_actual.startswith(
+        normalized_expected + "["
+    ) or normalized_actual.startswith(normalized_expected + ".")
 
 
-def normalize_watch_filters(watch_variables: Sequence[WatchTarget] | None) -> list[WatchFilter]:
+def normalize_watch_filters(
+    watch_variables: Sequence[WatchTarget] | None,
+) -> list[WatchFilter]:
     filters: list[WatchFilter] = []
     if not watch_variables:
         return filters
@@ -58,7 +70,9 @@ def normalize_watch_filters(watch_variables: Sequence[WatchTarget] | None) -> li
         elif isinstance(raw, str):
             if "[" in raw or "." in raw:
                 root_name = raw.split("[", 1)[0].split(".", 1)[0]
-                filters.append(WatchFilter(name=root_name, access_path=raw, trace_name=raw))
+                filters.append(
+                    WatchFilter(name=root_name, access_path=raw, trace_name=raw)
+                )
             else:
                 filters.append(WatchFilter(name=raw))
         elif isinstance(raw, Mapping):

@@ -10,7 +10,9 @@ class LinkedNode:
 
 def test_hash_table_node_builder_creates_bucket_heads_and_chain_nodes() -> None:
     value = [[1, 2], [], [{"id": 1, "value": "a"}]]
-    root_id, graph = build_graph_view(value, "data", ViewKind.HASH_TABLE, 2, item_limit=10)
+    root_id, graph = build_graph_view(
+        value, "data", ViewKind.HASH_TABLE, 2, item_limit=10
+    )
 
     assert root_id == "hash_exp_1"
     assert "hash_bucket_node_data_0" in graph.nodes
@@ -21,10 +23,11 @@ def test_hash_table_node_builder_creates_bucket_heads_and_chain_nodes() -> None:
     assert any(edge.dst == "hash_chain_node_data_0_0" for edge in graph.edges)
 
 
-
 def test_linked_list_node_builder_creates_nodes_and_tail() -> None:
     head = LinkedNode(1, LinkedNode(2, LinkedNode(3)))
-    root_id, graph = build_graph_view(head, "linked", ViewKind.LINKED_LIST, 2, item_limit=10)
+    root_id, graph = build_graph_view(
+        head, "linked", ViewKind.LINKED_LIST, 2, item_limit=10
+    )
 
     assert root_id == "linked_exp_1"
     assert any(node_id.startswith("linked_item_linked_1") for node_id in graph.nodes)
@@ -33,15 +36,18 @@ def test_linked_list_node_builder_creates_nodes_and_tail() -> None:
     assert "linked_tail_linked" in graph.nodes
 
 
-
 def test_heap_dual_node_builder_creates_array_and_tree_sections() -> None:
-    root_id, graph = build_graph_view([9, 7, 5, 3], "heap", ViewKind.HEAP_DUAL, 2, item_limit=10)
+    root_id, graph = build_graph_view(
+        [9, 7, 5, 3], "heap", ViewKind.HEAP_DUAL, 2, item_limit=10
+    )
 
     assert root_id == "heap_exp_1"
     assert any(node_id.startswith("heap_arr_") for node_id in graph.nodes)
     assert any("heap_item_heap_array_9_0" == node_id for node_id in graph.nodes)
     assert any(edge.src == root_id for edge in graph.edges)
-    tree_nodes = [node for node_id, node in graph.nodes.items() if node_id.startswith("tree_")]
+    tree_nodes = [
+        node for node_id, node in graph.nodes.items() if node_id.startswith("tree_")
+    ]
     assert tree_nodes
     assert all(not node.meta.get("html_label") for node in tree_nodes)
     assert all("<font" not in node.label for node in tree_nodes)
@@ -62,24 +68,26 @@ def test_heap_dual_node_builder_highlights_focused_array_index() -> None:
     assert focused.meta["node_attrs"]["penwidth"] == "2.0"
 
 
-
 def test_graph_view_builder_creates_root_and_node_entries() -> None:
     payload = {
         "nodes": [{"id": "A", "label": "A"}, {"id": "B", "label": "B"}],
         "edges": [{"source": "A", "target": "B", "label": "ab"}],
         "directed": True,
     }
-    root_id, graph = build_graph_view(payload, "graph_demo", ViewKind.GRAPH, 2, item_limit=10)
+    root_id, graph = build_graph_view(
+        payload, "graph_demo", ViewKind.GRAPH, 2, item_limit=10
+    )
 
     assert root_id.startswith("graph_")
     assert graph.nodes[root_id].meta.get("kind") == "graph_root"
     assert any(edge.label == "ab" for edge in graph.edges)
 
 
-
 def test_image_view_builder_creates_html_image_node() -> None:
     png_data_url = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO7Z0l8AAAAASUVORK5CYII="
-    root_id, graph = build_graph_view(png_data_url, "img", ViewKind.IMAGE, 1, item_limit=10)
+    root_id, graph = build_graph_view(
+        png_data_url, "img", ViewKind.IMAGE, 1, item_limit=10
+    )
 
     assert root_id.startswith("image_")
     assert root_id in graph.nodes
@@ -103,7 +111,9 @@ def test_remote_image_url_without_extension_uses_content_type(monkeypatch) -> No
 
     monkeypatch.setattr(image_sources, "urlopen", lambda *_args, **_kwargs: Response())
 
-    src = image_sources._detect_image_source("https://example.com/photo?w=1024&h=1024", strict=True)
+    src = image_sources._detect_image_source(
+        "https://example.com/photo?w=1024&h=1024", strict=True
+    )
 
     assert src is not None
     assert src.endswith(".jpg")
@@ -112,7 +122,11 @@ def test_remote_image_url_without_extension_uses_content_type(monkeypatch) -> No
 def test_strict_remote_image_url_falls_back_to_original_url(monkeypatch) -> None:
     from code_visualizer.utils import image_sources
 
-    monkeypatch.setattr(image_sources, "urlopen", lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("blocked")))
+    monkeypatch.setattr(
+        image_sources,
+        "urlopen",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("blocked")),
+    )
 
     url = "https://example.com/photo?w=1024&h=1024"
 
@@ -162,8 +176,12 @@ def test_tree_view_preserves_node_identity_when_children_swap() -> None:
         ],
     }
 
-    _, original_graph = build_graph_view(original, "tree_demo", ViewKind.TREE, 3, item_limit=20)
-    _, swapped_graph = build_graph_view(swapped, "tree_demo", ViewKind.TREE, 3, item_limit=20)
+    _, original_graph = build_graph_view(
+        original, "tree_demo", ViewKind.TREE, 3, item_limit=20
+    )
+    _, swapped_graph = build_graph_view(
+        swapped, "tree_demo", ViewKind.TREE, 3, item_limit=20
+    )
 
     original_ids = {node_id for node_id in original_graph.nodes if node_id != "CUT"}
     swapped_ids = {node_id for node_id in swapped_graph.nodes if node_id != "CUT"}
@@ -175,13 +193,26 @@ def test_tree_view_keeps_parent_ids_when_descendant_is_removed() -> None:
     from code_visualizer.graph_view_builder import build_graph_view
     from code_visualizer.view_types import ViewKind
 
-    before = {"label": "A", "children": [{"label": "B", "children": []}, {"label": "C", "children": [{"label": "D", "children": []}]}]}
-    after = {"label": "A", "children": [{"label": "B", "children": []}, {"label": "C", "children": []}]}
+    before = {
+        "label": "A",
+        "children": [
+            {"label": "B", "children": []},
+            {"label": "C", "children": [{"label": "D", "children": []}]},
+        ],
+    }
+    after = {
+        "label": "A",
+        "children": [{"label": "B", "children": []}, {"label": "C", "children": []}],
+    }
 
     _, before_graph = build_graph_view(before, "data", ViewKind.TREE, 3, item_limit=20)
     _, after_graph = build_graph_view(after, "data", ViewKind.TREE, 3, item_limit=20)
 
     before_ids = set(before_graph.nodes.keys())
     after_ids = set(after_graph.nodes.keys())
-    shared_tree_ids = {node_id for node_id in before_ids & after_ids if "_t_" in node_id or node_id.startswith("t_")}
+    shared_tree_ids = {
+        node_id
+        for node_id in before_ids & after_ids
+        if "_t_" in node_id or node_id.startswith("t_")
+    }
     assert shared_tree_ids

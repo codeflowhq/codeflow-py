@@ -45,7 +45,13 @@ def build_graph_view(
     focus_path: str | None = None,
     show_titles: bool = True,
 ) -> tuple[str, VisualGraph]:
-    runtime = _create_runtime(item_limit, value_coercer, view_resolver, focus_path=focus_path, show_titles=show_titles)
+    runtime = _create_runtime(
+        item_limit,
+        value_coercer,
+        view_resolver,
+        focus_path=focus_path,
+        show_titles=show_titles,
+    )
     coerced_value = runtime.coerce(value)
     root_id = _build_view(runtime, coerced_value, name, view, depth)
     return root_id, runtime.graph
@@ -70,11 +76,14 @@ def _create_runtime(
     )
 
 
-def _build_view(runtime: ViewBuildContext, value: Any, name: str, view: ViewKind, depth: int) -> str:
+def _build_view(
+    runtime: ViewBuildContext, value: Any, name: str, view: ViewKind, depth: int
+) -> str:
     builder = _VIEW_BUILDERS.get(view)
     if builder is None:
         raise ValueError(f"Unsupported nested view: {view}")
     return builder(runtime, value, name, depth)
+
 
 _VIEW_BUILDERS: dict[ViewKind, Callable[[ViewBuildContext, Any, str, int], str]] = {
     ViewKind.ARRAY_CELLS: _array_view_node_cells_builder,

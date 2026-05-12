@@ -34,7 +34,9 @@ from ..graph_layout import (
 )
 
 
-def _matrix_cell_dimensions(rows: list[list[Any]], row_limit: int, col_limit: int) -> tuple[int, int, int]:
+def _matrix_cell_dimensions(
+    rows: list[list[Any]], row_limit: int, col_limit: int
+) -> tuple[int, int, int]:
     row_header_width = 54
     cell_width = 54
     cell_height = 30
@@ -49,10 +51,25 @@ def _matrix_cell_dimensions(rows: list[list[Any]], row_limit: int, col_limit: in
     return row_header_width, cell_width, cell_height
 
 
-def _single_cell_table(content: str, *, width: int, height: int, align: str = "center", bgcolor: str | None = None, cellpadding: str | int = "0") -> str:
+def _single_cell_table(
+    content: str,
+    *,
+    width: int,
+    height: int,
+    align: str = "center",
+    bgcolor: str | None = None,
+    cellpadding: str | int = "0",
+) -> str:
     return html_table(
         html_row(
-            html_cell(content, width=width, height=height, align=align, bgcolor=bgcolor, cellpadding=cellpadding),
+            html_cell(
+                content,
+                width=width,
+                height=height,
+                align=align,
+                bgcolor=bgcolor,
+                cellpadding=cellpadding,
+            ),
         ),
         border="0",
         cellborder="0",
@@ -61,7 +78,9 @@ def _single_cell_table(content: str, *, width: int, height: int, align: str = "c
     )
 
 
-def build_matrix_view_node_cells(runtime: ViewBuildContext, value: Any, name: str, depth: int) -> str:  # noqa: C901
+def build_matrix_view_node_cells(  # noqa: C901
+    runtime: ViewBuildContext, value: Any, name: str, depth: int
+) -> str:
     logical_name = name.split(" [step ", 1)[0]
     if not isinstance(value, (list, tuple)):
         raise TypeError("matrix_node view expects a list of lists/tuples")
@@ -83,7 +102,22 @@ def build_matrix_view_node_cells(runtime: ViewBuildContext, value: Any, name: st
     )
 
     root_id = new_node_id(runtime, "matrix_exp")
-    graph.add_node(VisualNode(root_id, NodeKind.OBJECT, "", {"kind": "matrix_root", "node_attrs": {"shape": "point", "style": "invis", "width": "0.01", "height": "0.01"}}))
+    graph.add_node(
+        VisualNode(
+            root_id,
+            NodeKind.OBJECT,
+            "",
+            {
+                "kind": "matrix_root",
+                "node_attrs": {
+                    "shape": "point",
+                    "style": "invis",
+                    "width": "0.01",
+                    "height": "0.01",
+                },
+            },
+        )
+    )
 
     item_limit = runtime.item_limit
     depth_budget = max(0, depth)
@@ -93,7 +127,9 @@ def build_matrix_view_node_cells(runtime: ViewBuildContext, value: Any, name: st
     width = max((len(r) for r in rows), default=0)
     col_limit = min(width, min(item_limit, 25))
     focus_coords = matrix_focus_coords(runtime.focus_path)
-    row_header_width, cell_width, cell_height = _matrix_cell_dimensions(rows, row_limit, col_limit)
+    row_header_width, cell_width, cell_height = _matrix_cell_dimensions(
+        rows, row_limit, col_limit
+    )
 
     corner_id = safe_dot_token("matrix_corner", logical_name or "matrix")
     corner_label = _single_cell_table("", width=row_header_width, height=cell_height)
@@ -105,7 +141,11 @@ def build_matrix_view_node_cells(runtime: ViewBuildContext, value: Any, name: st
             {
                 "html_label": True,
                 "rank": "matrix_headers",
-                "node_attrs": {"shape": "plain", "color": BG_SURFACE, "penwidth": "0.0"},
+                "node_attrs": {
+                    "shape": "plain",
+                    "color": BG_SURFACE,
+                    "penwidth": "0.0",
+                },
             },
         )
     )
@@ -124,8 +164,30 @@ def build_matrix_view_node_cells(runtime: ViewBuildContext, value: Any, name: st
             height=cell_height,
             bgcolor=col_fill,
         )
-        graph.add_node(VisualNode(col_id, NodeKind.OBJECT, col_label, {"html_label": True, "rank": "matrix_headers", "node_attrs": {"shape": "plain", "color": col_border, "penwidth": "0.8"}}))
-        graph.add_edge(VisualEdge(prev_col_id, col_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "14"}}))
+        graph.add_node(
+            VisualNode(
+                col_id,
+                NodeKind.OBJECT,
+                col_label,
+                {
+                    "html_label": True,
+                    "rank": "matrix_headers",
+                    "node_attrs": {
+                        "shape": "plain",
+                        "color": col_border,
+                        "penwidth": "0.8",
+                    },
+                },
+            )
+        )
+        graph.add_edge(
+            VisualEdge(
+                prev_col_id,
+                col_id,
+                type=EdgeKind.LAYOUT,
+                meta={"edge_attrs": {"style": "invis", "weight": "14"}},
+            )
+        )
         prev_col_id = col_id
 
     row_header_ids: list[str] = []
@@ -145,7 +207,22 @@ def build_matrix_view_node_cells(runtime: ViewBuildContext, value: Any, name: st
             height=cell_height,
             bgcolor=row_fill,
         )
-        graph.add_node(VisualNode(row_header_id, NodeKind.OBJECT, row_label, {"html_label": True, "rank": f"matrix_row_{r_idx}", "node_attrs": {"shape": "plain", "color": row_border, "penwidth": "0.8"}}))
+        graph.add_node(
+            VisualNode(
+                row_header_id,
+                NodeKind.OBJECT,
+                row_label,
+                {
+                    "html_label": True,
+                    "rank": f"matrix_row_{r_idx}",
+                    "node_attrs": {
+                        "shape": "plain",
+                        "color": row_border,
+                        "penwidth": "0.8",
+                    },
+                },
+            )
+        )
 
         current_row_cells: list[str] = []
         for c_idx in range(col_limit):
@@ -157,7 +234,9 @@ def build_matrix_view_node_cells(runtime: ViewBuildContext, value: Any, name: st
             if _is_scalar_value(val):
                 cell_content = _format_scalar_html(val)
             else:
-                cell_content = flatten_nested_preview_frame(render_nested_preview(val, cell_depth, item_limit, slot_name))
+                cell_content = flatten_nested_preview_frame(
+                    render_nested_preview(val, cell_depth, item_limit, slot_name)
+                )
                 if not cell_content:
                     cell_content = _format_container_stub(val)
 
@@ -180,31 +259,101 @@ def build_matrix_view_node_cells(runtime: ViewBuildContext, value: Any, name: st
                 cellspacing="0",
                 cellpadding="0",
             )
-            graph.add_node(VisualNode(cell_graph_id, NodeKind.OBJECT, cell_label, {"kind": "matrix_cell", "html_label": True, "rank": f"matrix_row_{r_idx}", "node_attrs": {"shape": "plain", "color": cell_border, "penwidth": cell_penwidth, "id": cell_svg_id}}))
+            graph.add_node(
+                VisualNode(
+                    cell_graph_id,
+                    NodeKind.OBJECT,
+                    cell_label,
+                    {
+                        "kind": "matrix_cell",
+                        "html_label": True,
+                        "rank": f"matrix_row_{r_idx}",
+                        "node_attrs": {
+                            "shape": "plain",
+                            "color": cell_border,
+                            "penwidth": cell_penwidth,
+                            "id": cell_svg_id,
+                        },
+                    },
+                )
+            )
             current_row_cells.append(cell_graph_id)
 
         if current_row_cells and first_row_cells is None:
             first_row_cells = list(current_row_cells)
 
         if current_row_cells:
-            graph.add_edge(VisualEdge(row_header_id, current_row_cells[0], type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "16"}}))
-            for left, right in zip(current_row_cells, current_row_cells[1:], strict=False):
-                graph.add_edge(VisualEdge(left, right, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "16"}}))
+            graph.add_edge(
+                VisualEdge(
+                    row_header_id,
+                    current_row_cells[0],
+                    type=EdgeKind.LAYOUT,
+                    meta={"edge_attrs": {"style": "invis", "weight": "16"}},
+                )
+            )
+            for left, right in zip(
+                current_row_cells, current_row_cells[1:], strict=False
+            ):
+                graph.add_edge(
+                    VisualEdge(
+                        left,
+                        right,
+                        type=EdgeKind.LAYOUT,
+                        meta={"edge_attrs": {"style": "invis", "weight": "16"}},
+                    )
+                )
 
         if previous_row_cells is not None:
-            graph.add_edge(VisualEdge(row_header_ids[-2], row_header_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "16"}}))
-            for upper, lower in zip(previous_row_cells, current_row_cells, strict=False):
-                graph.add_edge(VisualEdge(upper, lower, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "16"}}))
+            graph.add_edge(
+                VisualEdge(
+                    row_header_ids[-2],
+                    row_header_id,
+                    type=EdgeKind.LAYOUT,
+                    meta={"edge_attrs": {"style": "invis", "weight": "16"}},
+                )
+            )
+            for upper, lower in zip(
+                previous_row_cells, current_row_cells, strict=False
+            ):
+                graph.add_edge(
+                    VisualEdge(
+                        upper,
+                        lower,
+                        type=EdgeKind.LAYOUT,
+                        meta={"edge_attrs": {"style": "invis", "weight": "16"}},
+                    )
+                )
 
         previous_row_cells = current_row_cells
 
     if col_header_ids and first_row_cells:
         for col_id, cell_id in zip(col_header_ids, first_row_cells, strict=False):
-            graph.add_edge(VisualEdge(col_id, cell_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "16"}}))
+            graph.add_edge(
+                VisualEdge(
+                    col_id,
+                    cell_id,
+                    type=EdgeKind.LAYOUT,
+                    meta={"edge_attrs": {"style": "invis", "weight": "16"}},
+                )
+            )
 
     if col_header_ids:
-        graph.add_edge(VisualEdge(root_id, corner_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "16"}}))
+        graph.add_edge(
+            VisualEdge(
+                root_id,
+                corner_id,
+                type=EdgeKind.LAYOUT,
+                meta={"edge_attrs": {"style": "invis", "weight": "16"}},
+            )
+        )
     if row_header_ids:
-        graph.add_edge(VisualEdge(corner_id, row_header_ids[0], type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis", "weight": "16"}}))
+        graph.add_edge(
+            VisualEdge(
+                corner_id,
+                row_header_ids[0],
+                type=EdgeKind.LAYOUT,
+                meta={"edge_attrs": {"style": "invis", "weight": "16"}},
+            )
+        )
 
     return root_id

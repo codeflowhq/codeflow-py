@@ -27,7 +27,9 @@ def dict_html(
     rows = [
         html_row(
             html_cell("<b>Key</b>", width=key_width, bgcolor=BG_HEADER, align="center"),
-            html_cell("<b>Value</b>", width=value_width, bgcolor=BG_HEADER, align="center"),
+            html_cell(
+                "<b>Value</b>", width=value_width, bgcolor=BG_HEADER, align="center"
+            ),
         )
     ]
     if not items:

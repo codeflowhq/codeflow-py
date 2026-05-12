@@ -23,4 +23,3 @@ class ViewBuildContext:
 
     def with_resolver(self, resolver: ViewResolver | None) -> ViewBuildContext:
         return replace(self, resolver=resolver)
-

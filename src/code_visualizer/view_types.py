@@ -52,4 +52,9 @@ def ensure_view_kind(value: str | ViewKind) -> ViewKind:
 ViewOverrideMap = Mapping[str | type[Any], ViewKind]
 
 
-__all__ = ["LEGACY_VIEW_KIND_ALIASES", "ViewKind", "ViewOverrideMap", "ensure_view_kind"]
+__all__ = [
+    "LEGACY_VIEW_KIND_ALIASES",
+    "ViewKind",
+    "ViewOverrideMap",
+    "ensure_view_kind",
+]

@@ -9,7 +9,9 @@ from ..utils.value_formatting import format_scalar_html
 DirectionLiteral = Literal["LR", "TD"]
 
 
-def render_scalar_artifact(name: str, value: Any, direction: DirectionLiteral, *, show_titles: bool) -> Artifact:
+def render_scalar_artifact(
+    name: str, value: Any, direction: DirectionLiteral, *, show_titles: bool
+) -> Artifact:
     graph = VisualGraph()
     graph.add_node(
         VisualNode(

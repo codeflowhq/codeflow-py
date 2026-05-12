@@ -7,7 +7,11 @@ from code_visualizer.models import ArtifactKind
 
 
 def test_visualize_renders_scalar_artifact() -> None:
-    artifact = visualize(123, name="data", config=VisualizerConfig(show_titles=False, output_format="dot"))
+    artifact = visualize(
+        123,
+        name="data",
+        config=VisualizerConfig(show_titles=False, output_format="dot"),
+    )
 
     assert artifact.kind is ArtifactKind.GRAPHVIZ
     assert artifact.title is None

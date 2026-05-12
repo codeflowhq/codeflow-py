@@ -27,20 +27,39 @@ def render_graphviz_table(
     dot.attr("node", shape="plain")
     rows = [
         html_row(
-            html_cell(html_bold_text("Key"), id=_stable_svg_id(title, "header", "key"), bgcolor=BG_HEADER),
-            html_cell(html_bold_text("Value"), id=_stable_svg_id(title, "header", "value"), bgcolor=BG_HEADER),
+            html_cell(
+                html_bold_text("Key"),
+                id=_stable_svg_id(title, "header", "key"),
+                bgcolor=BG_HEADER,
+            ),
+            html_cell(
+                html_bold_text("Value"),
+                id=_stable_svg_id(title, "header", "value"),
+                bgcolor=BG_HEADER,
+            ),
         )
     ]
     if not items:
-        rows.append(html_row(html_cell("∅", id=_stable_svg_id(title, "row", "empty"), colspan="2")))
+        rows.append(
+            html_row(
+                html_cell("∅", id=_stable_svg_id(title, "row", "empty"), colspan="2")
+            )
+        )
     else:
         inner_depth = max(0, nested_depth) - 1 if nested_depth > 0 else 0
         for index, (key, value) in enumerate(items[:limit]):
-            value_html = _format_nested_value(value, inner_depth, max_items, nested_renderer, f"{title}.{key}")
+            value_html = _format_nested_value(
+                value, inner_depth, max_items, nested_renderer, f"{title}.{key}"
+            )
             rows.append(
                 html_row(
-                    html_cell(_table_cell_text(key), id=_stable_svg_id(title, "row", index, "key")),
-                    html_cell(value_html, id=_stable_svg_id(title, "row", index, "value")),
+                    html_cell(
+                        _table_cell_text(key),
+                        id=_stable_svg_id(title, "row", index, "key"),
+                    ),
+                    html_cell(
+                        value_html, id=_stable_svg_id(title, "row", index, "value")
+                    ),
                 )
             )
         if len(items) > max_items:
@@ -53,6 +72,12 @@ def render_graphviz_table(
                     )
                 )
             )
-    table = html_table(*rows, id=_stable_svg_id(title, "wrapper"), border="1", cellborder="1", cellspacing="0")
+    table = html_table(
+        *rows,
+        id=_stable_svg_id(title, "wrapper"),
+        border="1",
+        cellborder="1",
+        cellspacing="0",
+    )
     dot.node("dictview", label=f"<{table}>")
     return str(dot.source)

@@ -34,7 +34,9 @@ from ..graph_layout import (
 )
 
 
-def build_linked_list_view_nodes(runtime: ViewBuildContext, value: Any, name: str, depth: int) -> str:
+def build_linked_list_view_nodes(
+    runtime: ViewBuildContext, value: Any, name: str, depth: int
+) -> str:
     logical_name = name.split(" [step ", 1)[0]
     seq = _collect_linked_list_labels(value, runtime.item_limit)
     if seq is None:
@@ -56,7 +58,15 @@ def build_linked_list_view_nodes(runtime: ViewBuildContext, value: Any, name: st
             root_id,
             NodeKind.OBJECT,
             "",
-            {"kind": "linked_root", "node_attrs": {"shape": "point", "style": "invis", "width": "0.01", "height": "0.01"}},
+            {
+                "kind": "linked_root",
+                "node_attrs": {
+                    "shape": "point",
+                    "style": "invis",
+                    "width": "0.01",
+                    "height": "0.01",
+                },
+            },
         )
     )
     attach_view_title(runtime, root_id, name, "linked_list_node")
@@ -73,21 +83,31 @@ def build_linked_list_view_nodes(runtime: ViewBuildContext, value: Any, name: st
             scalar_key = str(item)
             occurrence = occurrence_counts.get(scalar_key, 0)
             occurrence_counts[scalar_key] = occurrence + 1
-            node_id = safe_dot_token("linked_item", logical_name or "linked", scalar_key, occurrence)
-            svg_id = _stable_svg_id(logical_name or "linked", "linked", "item", scalar_key, occurrence)
+            node_id = safe_dot_token(
+                "linked_item", logical_name or "linked", scalar_key, occurrence
+            )
+            svg_id = _stable_svg_id(
+                logical_name or "linked", "linked", "item", scalar_key, occurrence
+            )
             content_html = _format_scalar_html(item)
         else:
             node_id = safe_dot_token("linked_node", logical_name or "linked", idx)
             svg_id = _stable_svg_id(logical_name or "linked", "linked", "node", idx)
-            content_html = render_nested_preview(item, cell_depth, item_limit, slot_name)
+            content_html = render_nested_preview(
+                item, cell_depth, item_limit, slot_name
+            )
             if not content_html:
                 content_html = _format_container_stub(item)
 
         node_label = html_table(
             html_row(
-                html_cell(content_html, align="center", bgcolor=BG_SURFACE, cellpadding="6"),
                 html_cell(
-                    html_font("next", {"color": TEXT_MUTED, "point-size": BODY_FONT_SIZE - 1}),
+                    content_html, align="center", bgcolor=BG_SURFACE, cellpadding="6"
+                ),
+                html_cell(
+                    html_font(
+                        "next", {"color": TEXT_MUTED, "point-size": BODY_FONT_SIZE - 1}
+                    ),
                     align="center",
                     bgcolor=BG_PANEL,
                     cellpadding="6",
@@ -116,16 +136,41 @@ def build_linked_list_view_nodes(runtime: ViewBuildContext, value: Any, name: st
             )
         )
         if prev_id is None:
-            graph.add_edge(VisualEdge(root_id, node_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis"}}))
+            graph.add_edge(
+                VisualEdge(
+                    root_id,
+                    node_id,
+                    type=EdgeKind.LAYOUT,
+                    meta={"edge_attrs": {"style": "invis"}},
+                )
+            )
         else:
-            graph.add_edge(VisualEdge(prev_id, node_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"color": BORDER_CHAIN, "penwidth": "1.2", "arrowhead": "normal"}}))
+            graph.add_edge(
+                VisualEdge(
+                    prev_id,
+                    node_id,
+                    type=EdgeKind.LAYOUT,
+                    meta={
+                        "edge_attrs": {
+                            "color": BORDER_CHAIN,
+                            "penwidth": "1.2",
+                            "arrowhead": "normal",
+                        }
+                    },
+                )
+            )
         prev_id = node_id
 
     tail_id = safe_dot_token("linked_tail", logical_name or "linked")
     tail_text = "…" if truncated else "∅"
     tail_label = html_single_cell_table(
         html_font(tail_text, {"color": TEXT_NULL}),
-        table_attrs={"border": "1", "cellborder": "1", "cellspacing": "0", "cellpadding": "6"},
+        table_attrs={
+            "border": "1",
+            "cellborder": "1",
+            "cellspacing": "0",
+            "cellpadding": "6",
+        },
         align="center",
         bgcolor=BG_SURFACE,
     )
@@ -134,12 +179,40 @@ def build_linked_list_view_nodes(runtime: ViewBuildContext, value: Any, name: st
             tail_id,
             NodeKind.OBJECT,
             tail_label,
-            {"html_label": True, "node_attrs": {"shape": "plain", "color": BORDER_DEFAULT, "penwidth": "1.0", "id": _stable_svg_id(logical_name or "linked", "linked", "tail")}},
+            {
+                "html_label": True,
+                "node_attrs": {
+                    "shape": "plain",
+                    "color": BORDER_DEFAULT,
+                    "penwidth": "1.0",
+                    "id": _stable_svg_id(logical_name or "linked", "linked", "tail"),
+                },
+            },
         )
     )
     if prev_id is None:
-        graph.add_edge(VisualEdge(root_id, tail_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis"}}))
+        graph.add_edge(
+            VisualEdge(
+                root_id,
+                tail_id,
+                type=EdgeKind.LAYOUT,
+                meta={"edge_attrs": {"style": "invis"}},
+            )
+        )
     else:
-        graph.add_edge(VisualEdge(prev_id, tail_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"color": TEXT_NULL, "penwidth": "1.1", "arrowhead": "normal"}}))
+        graph.add_edge(
+            VisualEdge(
+                prev_id,
+                tail_id,
+                type=EdgeKind.LAYOUT,
+                meta={
+                    "edge_attrs": {
+                        "color": TEXT_NULL,
+                        "penwidth": "1.1",
+                        "arrowhead": "normal",
+                    }
+                },
+            )
+        )
 
     return root_id

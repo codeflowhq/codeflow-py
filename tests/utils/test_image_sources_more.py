@@ -49,12 +49,18 @@ def test_remote_helpers_and_ascii_path(monkeypatch: pytest.MonkeyPatch) -> None:
     assert _remote_url_suffix("https://example.com/a.jpg?x=1") == ".jpg"
     assert _remote_url_suffix("https://example.com/a") == ""
 
-    monkeypatch.setattr(image_sources, "urlopen", lambda request, timeout=5: _FailResponse())
+    monkeypatch.setattr(
+        image_sources, "urlopen", lambda request, timeout=5: _FailResponse()
+    )
     cached, error = _download_remote_image("https://example.com/a.png")
     assert cached is None
     assert "blocked" in (error or "")
 
-    monkeypatch.setattr(image_sources, "urlopen", lambda request, timeout=5: _SuccessResponse(PNG_BYTES, "image/png"))
+    monkeypatch.setattr(
+        image_sources,
+        "urlopen",
+        lambda request, timeout=5: _SuccessResponse(PNG_BYTES, "image/png"),
+    )
     cached, error = _download_remote_image("https://example.com/a")
     assert error is None
     assert cached is not None and Path(cached).exists()

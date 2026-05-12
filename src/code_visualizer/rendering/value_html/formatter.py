@@ -68,10 +68,24 @@ def format_inline_collection(
 
     sequence = normalize_sequence(value)
     if sequence is not None:
-        return sequence_html(sequence, next_depth, max_items, nested_renderer, slot_name, format_nested_value)
+        return sequence_html(
+            sequence,
+            next_depth,
+            max_items,
+            nested_renderer,
+            slot_name,
+            format_nested_value,
+        )
 
     if isinstance(value, dict):
-        return dict_html(value, next_depth, max_items, nested_renderer, slot_name, format_nested_value)
+        return dict_html(
+            value,
+            next_depth,
+            max_items,
+            nested_renderer,
+            slot_name,
+            format_nested_value,
+        )
     return None
 
 
@@ -96,8 +110,14 @@ def format_value_label(
 
     html_depth: int | None = None
     depth = max(0, nested_depth)
-    if depth > 0 or _is_matrix_value(value) or isinstance(value, (list, tuple, set, frozenset, dict)):
+    if (
+        depth > 0
+        or _is_matrix_value(value)
+        or isinstance(value, (list, tuple, set, frozenset, dict))
+    ):
         html_depth = max(depth, 1)
     if html_depth is None:
         return str(value), False
-    return format_nested_value(value, html_depth, max_items, nested_renderer, slot_name), True
+    return format_nested_value(
+        value, html_depth, max_items, nested_renderer, slot_name
+    ), True

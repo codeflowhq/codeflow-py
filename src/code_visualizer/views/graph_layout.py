@@ -43,7 +43,10 @@ def init_graph_attrs(
     graph.graph_attrs.setdefault("labelloc", "t")
     graph.graph_attrs.setdefault("labeljust", "c")
     if show_title and title:
-        title_html = html_font(html_bold_text(title), {"point-size": TITLE_FONT_SIZE, "color": TEXT_PRIMARY})
+        title_html = html_font(
+            html_bold_text(title),
+            {"point-size": TITLE_FONT_SIZE, "color": TEXT_PRIMARY},
+        )
         graph.graph_attrs["label"] = f"<{title_html}{subtitle_html or ''}>"
 
 
@@ -80,16 +83,22 @@ def soften_nested_preview_wrapper(html_label: str) -> str:
         return html_label
 
     softened_open = "<table border='0' cellborder='0' cellspacing='0' cellpadding='0'>"
-    return softened_open + stripped[open_match.end():]
+    return softened_open + stripped[open_match.end() :]
 
 
-def render_nested_preview(value: Any, depth_remaining: int, max_items: int, slot_name: str) -> str:
-    preview_html = _format_nested_value(value, depth_remaining, max_items, None, slot_name)
+def render_nested_preview(
+    value: Any, depth_remaining: int, max_items: int, slot_name: str
+) -> str:
+    preview_html = _format_nested_value(
+        value, depth_remaining, max_items, None, slot_name
+    )
     if not preview_html:
         preview_html = _format_container_stub(value)
     inner = html_table(
         html_row(
-            html_cell(preview_html, align="center", bgcolor=BG_SURFACE, cellpadding="1"),
+            html_cell(
+                preview_html, align="center", bgcolor=BG_SURFACE, cellpadding="1"
+            ),
         ),
         border="1",
         cellborder="1",
@@ -120,12 +129,25 @@ def flatten_nested_preview_frame(html_label: str) -> str:
         "<table border='0' cellborder='0' cellspacing='0' cellpadding='0'>",
         1,
     )
-    softened = softened.replace(f"bgcolor='{BG_PREVIEW}' cellpadding='1'", f"bgcolor='{BG_PREVIEW}' cellpadding='0'", 1)
-    softened = softened.replace(f"bgcolor='{BG_SURFACE}' cellpadding='1'", f"bgcolor='{BG_SURFACE}' cellpadding='0'", 1)
+    softened = softened.replace(
+        f"bgcolor='{BG_PREVIEW}' cellpadding='1'",
+        f"bgcolor='{BG_PREVIEW}' cellpadding='0'",
+        1,
+    )
+    softened = softened.replace(
+        f"bgcolor='{BG_SURFACE}' cellpadding='1'",
+        f"bgcolor='{BG_SURFACE}' cellpadding='0'",
+        1,
+    )
     return softened
 
 
-def merge_visual_graph(runtime: ViewBuildContext, other: VisualGraph, prefix: str, root_hint: str | None = None) -> str:
+def merge_visual_graph(
+    runtime: ViewBuildContext,
+    other: VisualGraph,
+    prefix: str,
+    root_hint: str | None = None,
+) -> str:
     graph = runtime.graph
     mapping: dict[str, str] = {}
     for node_id, node in other.nodes.items():
@@ -190,7 +212,9 @@ def add_html_node(
     merged_meta: dict[str, Any] = {"html_label": True, "node_attrs": {"shape": "plain"}}
     if meta:
         merged_meta.update(meta)
-    runtime.graph.add_node(VisualNode(node_id, NodeKind.OBJECT, label_html, merged_meta))
+    runtime.graph.add_node(
+        VisualNode(node_id, NodeKind.OBJECT, label_html, merged_meta)
+    )
 
 
 def add_edge(

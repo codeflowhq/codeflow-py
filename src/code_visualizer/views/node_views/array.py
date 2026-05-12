@@ -36,12 +36,20 @@ def _array_focus_index(focus_path: str | None, logical_name: str) -> int | None:
     normalized_name = logical_name.replace('"', "'")
     if not normalized_focus.startswith(normalized_name):
         return None
-    suffix = normalized_focus[len(normalized_name):]
+    suffix = normalized_focus[len(normalized_name) :]
     match = re.match(r"^\[(\d+)\]", suffix)
     return int(match.group(1)) if match else None
 
 
-def _array_cell_label(content_html: str, *, node_id: str, value_cell_width: int, value_cell_height: int, value_fill: str, index: int) -> str:
+def _array_cell_label(
+    content_html: str,
+    *,
+    node_id: str,
+    value_cell_width: int,
+    value_cell_height: int,
+    value_fill: str,
+    index: int,
+) -> str:
     return html_table(
         html_row(
             html_cell(
@@ -57,7 +65,9 @@ def _array_cell_label(content_html: str, *, node_id: str, value_cell_width: int,
         ),
         html_row(
             html_cell(
-                html_font(str(index), {"color": TEXT_MUTED, "point-size": SUBTITLE_FONT_SIZE}),
+                html_font(
+                    str(index), {"color": TEXT_MUTED, "point-size": SUBTITLE_FONT_SIZE}
+                ),
                 align="center",
                 bgcolor=BG_SURFACE,
                 cellpadding="1",
@@ -70,7 +80,9 @@ def _array_cell_label(content_html: str, *, node_id: str, value_cell_width: int,
     )
 
 
-def build_array_view_node_cells(runtime: ViewBuildContext, value: Any, name: str, depth: int) -> str:
+def build_array_view_node_cells(
+    runtime: ViewBuildContext, value: Any, name: str, depth: int
+) -> str:
     from ..nested import experimental_array_nested_resolver, make_nested_renderer
 
     logical_name = name.split(" [step ", 1)[0]
@@ -100,23 +112,45 @@ def build_array_view_node_cells(runtime: ViewBuildContext, value: Any, name: str
             root_id,
             NodeKind.OBJECT,
             "",
-            {"kind": "array_root", "node_attrs": {"shape": "point", "style": "invis", "width": "0.01", "height": "0.01"}},
+            {
+                "kind": "array_root",
+                "node_attrs": {
+                    "shape": "point",
+                    "style": "invis",
+                    "width": "0.01",
+                    "height": "0.01",
+                },
+            },
         )
     )
 
     item_limit = runtime.item_limit
     depth_budget = max(0, depth)
     cell_depth = depth_budget - 1 if depth_budget > 0 else 0
-    nested_runtime = runtime.with_resolver(experimental_array_nested_resolver(runtime, runtime.resolver))
+    nested_runtime = runtime.with_resolver(
+        experimental_array_nested_resolver(runtime, runtime.resolver)
+    )
     limit = min(len(array), item_limit)
     visible_items = array[:limit]
     value_cell_height = max(
         30,
-        min(420, max((estimate_visual_height(item, item_limit) for item in visible_items), default=30)),
+        min(
+            420,
+            max(
+                (estimate_visual_height(item, item_limit) for item in visible_items),
+                default=30,
+            ),
+        ),
     )
     value_cell_width = max(
         54,
-        min(920, max((estimate_visual_width(item, item_limit) for item in visible_items), default=54)),
+        min(
+            920,
+            max(
+                (estimate_visual_width(item, item_limit) for item in visible_items),
+                default=54,
+            ),
+        ),
     )
     occurrence_counts: dict[str, int] = {}
     prev_id: str | None = None
@@ -131,18 +165,27 @@ def build_array_view_node_cells(runtime: ViewBuildContext, value: Any, name: str
             scalar_key = str(item)
             occurrence = occurrence_counts.get(scalar_key, 0)
             occurrence_counts[scalar_key] = occurrence + 1
-            node_id = safe_dot_token("arr_item", logical_name or "array", scalar_key, occurrence)
-            svg_id = _stable_svg_id(logical_name or "array", "array", "item", scalar_key, occurrence)
+            node_id = safe_dot_token(
+                "arr_item", logical_name or "array", scalar_key, occurrence
+            )
+            svg_id = _stable_svg_id(
+                logical_name or "array", "array", "item", scalar_key, occurrence
+            )
             content_html = _format_scalar_html(item)
         else:
             node_id = safe_dot_token("arr_cell", logical_name or "array", idx)
             svg_id = _stable_svg_id(logical_name or "array", "array", "cell", idx)
             if isinstance(item, (list, tuple, set, frozenset, dict)):
-                content_html = _format_nested_value(item, cell_depth, item_limit, None, slot_name)
+                content_html = _format_nested_value(
+                    item, cell_depth, item_limit, None, slot_name
+                )
             else:
-                nested_renderer = make_nested_renderer(nested_runtime, node_id, f"{node_id}_value", slot_name)
+                nested_renderer = make_nested_renderer(
+                    nested_runtime, node_id, f"{node_id}_value", slot_name
+                )
                 content_html = flatten_nested_preview_frame(
-                    nested_renderer(item, slot_name, cell_depth) or _format_container_stub(item)
+                    nested_renderer(item, slot_name, cell_depth)
+                    or _format_container_stub(item)
                 )
         node_label = _array_cell_label(
             content_html,
@@ -161,14 +204,33 @@ def build_array_view_node_cells(runtime: ViewBuildContext, value: Any, name: str
                     "kind": "array_cell",
                     "html_label": True,
                     "rank": "array_items",
-                    "node_attrs": {"shape": "plain", "color": border_color, "penwidth": penwidth, "id": svg_id},
+                    "node_attrs": {
+                        "shape": "plain",
+                        "color": border_color,
+                        "penwidth": penwidth,
+                        "id": svg_id,
+                    },
                 },
             )
         )
         if prev_id is None:
-            graph.add_edge(VisualEdge(root_id, node_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis"}}))
+            graph.add_edge(
+                VisualEdge(
+                    root_id,
+                    node_id,
+                    type=EdgeKind.LAYOUT,
+                    meta={"edge_attrs": {"style": "invis"}},
+                )
+            )
         else:
-            graph.add_edge(VisualEdge(prev_id, node_id, type=EdgeKind.LAYOUT, meta={"edge_attrs": {"style": "invis"}}))
+            graph.add_edge(
+                VisualEdge(
+                    prev_id,
+                    node_id,
+                    type=EdgeKind.LAYOUT,
+                    meta={"edge_attrs": {"style": "invis"}},
+                )
+            )
         prev_id = node_id
 
     return root_id

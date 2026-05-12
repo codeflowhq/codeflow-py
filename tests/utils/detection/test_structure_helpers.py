@@ -19,13 +19,11 @@ class _Node:
         self.next = next_node
 
 
-
 def test_looks_like_graph_mapping_accepts_common_edge_shapes() -> None:
     assert _looks_like_graph_mapping({"nodes": ["A"], "edges": [("A", "B")]})
     assert _looks_like_graph_mapping({"edges": [{"source": "A", "target": "B"}]})
     assert not _looks_like_graph_mapping({"edges": "A-B"})
     assert not _looks_like_graph_mapping({"nodes": ["A"]})
-
 
 
 def test_try_networkx_edges_nodes_snapshots_graph_when_available() -> None:
@@ -43,7 +41,6 @@ def test_try_networkx_edges_nodes_snapshots_graph_when_available() -> None:
     assert directed is True
 
 
-
 def test_collect_linked_list_labels_handles_cycles_and_missing_next() -> None:
     first = _Node(1)
     second = _Node(2)
@@ -55,7 +52,6 @@ def test_collect_linked_list_labels_handles_cycles_and_missing_next() -> None:
     assert _collect_linked_list_labels(first, 5) == ([1, 2], True)
 
 
-
 def test_looks_like_hash_table_accepts_bucket_shapes() -> None:
     linked_bucket = _Node(1, _Node(2))
 
@@ -63,7 +59,6 @@ def test_looks_like_hash_table_accepts_bucket_shapes() -> None:
     assert _looks_like_hash_table([[], [("a", 1)]])
     assert _looks_like_hash_table([None, linked_bucket])
     assert not _looks_like_hash_table([1, 2, 3])
-
 
 
 def test_hash_bucket_entries_handles_mapping_set_sequence_and_linked_list() -> None:

@@ -25,7 +25,9 @@ def test_converter_pipeline_returns_first_match() -> None:
 
 
 def test_apply_converter_pipeline_preserves_unhandled_values() -> None:
-    converted, handled = apply_converter_pipeline("x", (deque_converter, identity_converter))
+    converted, handled = apply_converter_pipeline(
+        "x", (deque_converter, identity_converter)
+    )
 
     assert handled is False
     assert converted == "x"

@@ -36,7 +36,9 @@ def run_tracing_gallery(config: VisualizerConfig) -> None:
         _render_case_frames(traces, case, config)
 
 
-def _render_case_frames(traces: Mapping[str, Any], case: Mapping[str, Any], config: VisualizerConfig) -> None:
+def _render_case_frames(
+    traces: Mapping[str, Any], case: Mapping[str, Any], config: VisualizerConfig
+) -> None:
     for target in case["watch"]:
         target_name = _watch_target_name(target)
         if not target_name:
@@ -45,9 +47,13 @@ def _render_case_frames(traces: Mapping[str, Any], case: Mapping[str, Any], conf
         if data_trace is None:
             print(f"{target_name} not captured, skipping")
             continue
-        trace_artifacts = visualize_trace(data_trace, config=config, max_steps=case.get("max_steps"))
+        trace_artifacts = visualize_trace(
+            data_trace, config=config, max_steps=case.get("max_steps")
+        )
         for index, artifact in enumerate(trace_artifacts, start=1):
-            trace_path = save_artifact(artifact, f"{case['stem']}_{target_name}_{index}", config=config)
+            trace_path = save_artifact(
+                artifact, f"{case['stem']}_{target_name}_{index}", config=config
+            )
             print(f"{target_name} frame {index}: {trace_path}")
         if not trace_artifacts:
             print(f"{target_name} has no available frames")

@@ -17,7 +17,9 @@ def demo_visualize(value: Any, *, config: VisualizerConfig, **kwargs: Any) -> Ar
     return visualize(value, **kwargs)
 
 
-def save_artifact(artifact: Artifact, stem: str, *, config: VisualizerConfig, fmt: str | None = None) -> Path:
+def save_artifact(
+    artifact: Artifact, stem: str, *, config: VisualizerConfig, fmt: str | None = None
+) -> Path:
     if artifact.kind == ArtifactKind.TEXT:
         text_path = OUTPUT_DIR / f"{stem}.txt"
         text_path.write_text(artifact.content, encoding="utf-8")
@@ -34,5 +36,7 @@ def save_artifact(artifact: Artifact, stem: str, *, config: VisualizerConfig, fm
 
     src = Source(artifact.content)
     src.format = resolved_fmt
-    rendered_path = Path(src.render(filename=stem, directory=str(OUTPUT_DIR), cleanup=True))
+    rendered_path = Path(
+        src.render(filename=stem, directory=str(OUTPUT_DIR), cleanup=True)
+    )
     return rendered_path.with_suffix(f".{resolved_fmt}")

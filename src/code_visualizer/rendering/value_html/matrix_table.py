@@ -25,15 +25,25 @@ def matrix_html(
     depth_remaining = max(0, depth_remaining)
     total_rows = len(rows)
     width = max((len(row) for row in rows), default=0)
-    limit_rows = min(total_rows, row_limit if row_limit is not None else total_rows, max_items)
+    limit_rows = min(
+        total_rows, row_limit if row_limit is not None else total_rows, max_items
+    )
     limit_cols = min(width, col_limit if col_limit is not None else width, max_items)
     table: list[str] = []
 
     def cell(item: object) -> str:
-        return format_nested_value(item, depth_remaining, max_items, nested_renderer, slot_name)
+        return format_nested_value(
+            item, depth_remaining, max_items, nested_renderer, slot_name
+        )
 
     if include_headers:
-        header_cells = [html_cell("", id=_stable_svg_id(slot_name, "header", "corner"), bgcolor=BG_HEADER_MUTED)]
+        header_cells = [
+            html_cell(
+                "",
+                id=_stable_svg_id(slot_name, "header", "corner"),
+                bgcolor=BG_HEADER_MUTED,
+            )
+        ]
         for column in range(limit_cols):
             header_cells.append(
                 html_cell(
@@ -43,7 +53,13 @@ def matrix_html(
                 )
             )
         if width > limit_cols:
-            header_cells.append(html_cell("…", id=_stable_svg_id(slot_name, "header", "ellipsis"), bgcolor=BG_HEADER_MUTED))
+            header_cells.append(
+                html_cell(
+                    "…",
+                    id=_stable_svg_id(slot_name, "header", "ellipsis"),
+                    bgcolor=BG_HEADER_MUTED,
+                )
+            )
         table.append(html_row(*header_cells))
 
     for row_index in range(limit_rows):
@@ -59,13 +75,26 @@ def matrix_html(
             )
         for column_index in range(limit_cols):
             item = row[column_index] if column_index < len(row) else ""
-            cells.append(html_cell(cell(item), id=_stable_svg_id(slot_name, "row", row_index, "col", column_index)))
+            cells.append(
+                html_cell(
+                    cell(item),
+                    id=_stable_svg_id(slot_name, "row", row_index, "col", column_index),
+                )
+            )
         if len(row) > limit_cols:
-            cells.append(html_cell("…", id=_stable_svg_id(slot_name, "row", row_index, "ellipsis")))
+            cells.append(
+                html_cell(
+                    "…", id=_stable_svg_id(slot_name, "row", row_index, "ellipsis")
+                )
+            )
         table.append(html_row(*cells))
 
     if total_rows > limit_rows:
-        colspan = limit_cols + (1 if include_headers else 0) + (1 if width > limit_cols else 0)
+        colspan = (
+            limit_cols
+            + (1 if include_headers else 0)
+            + (1 if width > limit_cols else 0)
+        )
         table.append(
             html_row(
                 html_cell(

@@ -31,14 +31,12 @@ def _runtime(show_titles: bool = True) -> ViewBuildContext:
     )
 
 
-
 def test_basic_common_helpers() -> None:
     runtime = _runtime()
     assert new_node_id(runtime, "x") == "x_1"
     assert safe_dot_token("a b", "c-d") == "a_b_c_d"
     assert matrix_focus_coords("data[1][2]") == (1, 2)
     assert matrix_focus_coords("data") is None
-
 
 
 def test_preview_helpers_and_title_attachment() -> None:
@@ -62,7 +60,6 @@ def test_preview_helpers_and_title_attachment() -> None:
     assert "label" not in no_title.graph.graph_attrs
 
 
-
 def test_merge_visual_graph_and_add_helpers() -> None:
     runtime = _runtime()
     other = VisualGraph()
@@ -73,7 +70,9 @@ def test_merge_visual_graph_and_add_helpers() -> None:
     assert "pref__child" in runtime.graph.nodes
 
     add_html_node(runtime, "html", "<b>x</b>")
-    add_edge(runtime, "pref__ROOT", "html", tailport="p0", edge_meta={"style": "dashed"})
+    add_edge(
+        runtime, "pref__ROOT", "html", tailport="p0", edge_meta={"style": "dashed"}
+    )
     edge = runtime.graph.edges[-1]
     assert edge.meta["tailport"] == "p0"
     assert edge.meta["edge_attrs"]["style"] == "dashed"
