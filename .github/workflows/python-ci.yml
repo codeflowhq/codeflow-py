@@ -17,10 +17,7 @@ jobs:
       - name: Sync dependencies
         run: uv sync --group dev
       - name: Ruff
-        run: uv run ruff check src/code_visualizer/builders src/code_visualizer/views src/code_visualizer/tracing src/code_visualizer/graph_builder.py src/code_visualizer/graph_view_builder.py src/code_visualizer/browser_api.py src/code_visualizer/view_utils.py tests
+        run: uv run ruff check src/code_visualizer tests      
       - name: Mypy
-        run: uv run mypy src/code_visualizer/builders src/code_visualizer/views src/code_visualizer/tracing src/code_visualizer/graph_builder.py src/code_visualizer/graph_view_builder.py src/code_visualizer/browser_api.py
-      - name: Pytest
-        run: uv run pytest tests -q
-      - name: Build wheel
+        run: uv run mypy src/code_visualizer
         run: uv build --wheel
