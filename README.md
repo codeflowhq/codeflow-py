@@ -126,7 +126,7 @@ Run the end-to-end showcase to regenerate every artifact (array layouts, graph m
 ```bash
 python -m code_visualizer.demo
 ```
-All PNG/SVG outputs land in `src/code_visualizer/demo_outputs/`. We removed pre-generated images from the repo to keep commits light—rerun the demo anytime to recreate them. Each StepTracer case is defined in `STEP_TRACER_CASES` inside `demo.py`, so you can tweak payloads, watch filters, or append new algorithms.
+All PNG/SVG outputs land in `src/code_visualizer/demo_outputs/`. We removed pre-generated images from the repo to keep commits light—rerun the demo anytime to recreate them. Each StepTracer case is defined in `STEP_TRACER_CASES` inside `src/code_visualizer/demo/samples.py`, so you can tweak payloads, watch filters, or append new algorithms.
 
 ## Config lifecycle & customization
 
