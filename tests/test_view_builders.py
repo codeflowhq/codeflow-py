@@ -33,7 +33,7 @@ def test_array_node_builder_uses_equal_outer_cell_size_for_nested_list() -> None
 
 def test_array_node_builder_expands_dict_items_inline() -> None:
     users = [{"id": 1, "tags": ["a", "b"]}, {"id": 2, "tags": ["c", "d"]}]
-    _, graph = build_graph_view(users, 'data["users"]', ViewKind.ARRAY_CELLS_NODE, 1, item_limit=10)
+    _, graph = build_graph_view(users, 'data["users"]', ViewKind.ARRAY_CELLS_NODE, 2, item_limit=10)
 
     first_user_label = graph.nodes["arr_cell_data_users_0"].label
 
@@ -41,6 +41,23 @@ def test_array_node_builder_expands_dict_items_inline() -> None:
     assert "<b>Key</b>" in first_user_label
     assert "id" in first_user_label
     assert "tags" in first_user_label
+
+
+def test_array_node_builder_highlights_focused_nested_index() -> None:
+    users = [{"id": 1}, {"id": 2}]
+    _, graph = build_graph_view(
+        users,
+        'data["users"]',
+        ViewKind.ARRAY_CELLS_NODE,
+        2,
+        item_limit=10,
+        focus_path="data['users'][1]['id']",
+    )
+
+    focused_label = graph.nodes["arr_cell_data_users_1"].label
+
+    assert "bgcolor='#eff6ff'" in focused_label
+    assert graph.nodes["arr_cell_data_users_1"].meta["node_attrs"]["color"] == "#60a5fa"
 
 
 def test_table_node_builder_creates_header_and_row_nodes() -> None:

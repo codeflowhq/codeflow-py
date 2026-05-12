@@ -3,6 +3,12 @@ from code_visualizer.step_tracing import (
     _normalize_access_path,
     _normalize_watch_filters,
 )
+from code_visualizer.tracing.common import VariableTraceEvent, WatchFilter
+from code_visualizer.tracing.pipeline import (
+    _focus_path_from_frame_meta,
+    _project_expression_watch_events,
+    trace_algorithm,
+)
 
 
 def test_normalize_access_path_normalizes_quotes() -> None:
@@ -21,3 +27,51 @@ def test_normalize_watch_filters_keeps_trace_name_for_expressions() -> None:
     assert filters[0].access_path == 'data["meta"]'
     assert filters[0].name == "data"
     assert filters[1].name == "data"
+
+
+def test_expression_watch_preserves_nested_focus_path() -> None:
+    event = VariableTraceEvent(
+        variable="data",
+        value={"users": [{"id": 1}, {"id": 2, "tags": ["z", "d"]}]},
+        line_number=8,
+        scope_id=0,
+        execution_id=2,
+        var_id=3,
+        access_path="data['users'][1]['tags'][0]",
+        order=4,
+        access_paths=("data['users'][1]['tags'][0]",),
+    )
+
+    projected = _project_expression_watch_events(
+        [event],
+        [WatchFilter(name="data", access_path='data["users"]', trace_name='data["users"]')],
+    )
+
+    assert len(projected) == 1
+    assert projected[0].variable == 'data["users"]'
+    assert projected[0].value == [{"id": 1}, {"id": 2, "tags": ["z", "d"]}]
+    assert projected[0].access_path == "data['users'][1]['tags'][0]"
+    assert projected[0].access_paths == ("data['users'][1]['tags'][0]",)
+
+
+def test_focus_path_prefers_specific_access_path() -> None:
+    assert _focus_path_from_frame_meta(
+        {
+            "access_path": "data",
+            "access_paths": ["data", "data['users'][1]['tags'][0]"],
+        }
+    ) == "data['users'][1]['tags'][0]"
+
+
+def test_root_and_expression_watches_both_keep_nested_updates() -> None:
+    source = """\
+data = {"users": [{"tags": ["a"]}, {"tags": ["b"]}]}
+data["users"][1]["tags"][0] = "z"
+"""
+
+    events = trace_algorithm(source, ["data", 'data["users"]'])
+    data_paths = [event.access_path for event in events if event.variable == "data"]
+    users_paths = [event.access_path for event in events if event.variable == 'data["users"]']
+
+    assert "data['users'][1]['tags'][0]" in data_paths
+    assert "data['users'][1]['tags'][0]" in users_paths
