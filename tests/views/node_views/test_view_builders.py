@@ -1,5 +1,5 @@
-from code_visualizer.graph_view_builder import build_graph_view
-from code_visualizer.view_types import ViewKind
+from code_visualizer.shared.view_kinds import ViewKind
+from code_visualizer.views.dispatcher import build_graph_view
 
 
 def test_array_node_builder_uses_occurrence_based_item_ids() -> None:

@@ -4,11 +4,11 @@ from collections import defaultdict
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from typing import Any
 
-from ..builders.visualization import visualize
-from ..config import VisualizerConfig, default_visualizer_config
-from ..models import Artifact, Frame, Trace
-from .trace_models import RenderedTraceFrame, VariableTraceEvent
-from .watch_filters import format_trace_slot_name
+from ..pipeline.pipeline import visualize
+from ..shared.config import VisualizerConfig, default_visualizer_config
+from ..shared.models import Artifact, Frame, Trace
+from .filtering import format_trace_slot_name
+from .types import RenderedTraceFrame, VariableTraceEvent
 
 
 def build_traces(

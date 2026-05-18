@@ -4,7 +4,7 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
-from ...view_types import ViewKind
+from ...shared.view_kinds import ViewKind
 from ..detection.linked import _collect_linked_list_labels
 from ..detection.tree import _tree_children
 from ..image_sources import _looks_like_image_candidate

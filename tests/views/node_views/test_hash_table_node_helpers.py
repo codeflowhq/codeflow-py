@@ -1,4 +1,4 @@
-from code_visualizer.models import NodeKind, VisualGraph
+from code_visualizer.shared.models import NodeKind, VisualGraph
 from code_visualizer.views.node_views.hash_table_helpers import (
     configure_hash_table_graph,
     hash_bucket_head_node,

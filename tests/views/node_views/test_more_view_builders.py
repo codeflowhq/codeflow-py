@@ -1,5 +1,5 @@
-from code_visualizer.graph_view_builder import build_graph_view
-from code_visualizer.view_types import ViewKind
+from code_visualizer.shared.view_kinds import ViewKind
+from code_visualizer.views.dispatcher import build_graph_view
 
 
 class LinkedNode:
@@ -190,8 +190,8 @@ def test_tree_view_preserves_node_identity_when_children_swap() -> None:
 
 
 def test_tree_view_keeps_parent_ids_when_descendant_is_removed() -> None:
-    from code_visualizer.graph_view_builder import build_graph_view
-    from code_visualizer.view_types import ViewKind
+    from code_visualizer.shared.view_kinds import ViewKind
+    from code_visualizer.views.dispatcher import build_graph_view
 
     before = {
         "label": "A",

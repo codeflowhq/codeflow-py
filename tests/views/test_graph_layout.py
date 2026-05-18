@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from itertools import count
 
-from code_visualizer.models import NodeKind, VisualGraph, VisualNode
+from code_visualizer.shared.models import NodeKind, VisualGraph, VisualNode
 from code_visualizer.views.context import ViewBuildContext
 from code_visualizer.views.graph_layout import (
     add_edge,

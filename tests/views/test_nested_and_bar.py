@@ -4,15 +4,15 @@ from itertools import count
 
 import pytest
 
-from code_visualizer.graph_view_builder import build_graph_view
-from code_visualizer.models import VisualGraph
-from code_visualizer.view_types import ViewKind
-from code_visualizer.views.context import ViewBuildContext
-from code_visualizer.views.nested import (
+from code_visualizer.shared.models import VisualGraph
+from code_visualizer.shared.view_kinds import ViewKind
+from code_visualizer.views.composite_view import (
     experimental_array_nested_resolver,
     legacy_nested_view,
     select_nested_view,
 )
+from code_visualizer.views.context import ViewBuildContext
+from code_visualizer.views.dispatcher import build_graph_view
 
 
 class _TreeNode:

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from collections import deque
 
-from code_visualizer.tracing.event_processing import (
+from code_visualizer.tracing.filtering import WatchFilter
+from code_visualizer.tracing.processing import (
     _augment_pop_mutation_events,
     _compact_event_orders,
     _extract_access_path_value,
@@ -12,8 +13,7 @@ from code_visualizer.tracing.event_processing import (
     _project_expression_watch_events,
     _simulate_pop_value,
 )
-from code_visualizer.tracing.trace_models import VariableTraceEvent
-from code_visualizer.tracing.watch_filters import WatchFilter
+from code_visualizer.tracing.types import VariableTraceEvent
 
 
 class _Object:

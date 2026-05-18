@@ -1,9 +1,9 @@
+from code_visualizer.shared.view_kinds import ViewKind
 from code_visualizer.utils.type_patterns.matching import (
     _compile_type_pattern,
     _match_type_pattern_override,
 )
 from code_visualizer.utils.type_patterns.naming import _match_named_override
-from code_visualizer.view_types import ViewKind
 
 
 class _Tree:

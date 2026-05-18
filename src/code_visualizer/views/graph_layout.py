@@ -4,22 +4,22 @@ import re
 from collections.abc import Iterator
 from typing import Any
 
-from ..models import EdgeKind, NodeKind, VisualEdge, VisualGraph, VisualNode
-from ..rendering.html_labels import (
+from ..renderers.html.labels import (
     html_bold_text,
     html_cell,
     html_font,
     html_row,
     html_table,
 )
-from ..rendering.theme import (
+from ..renderers.html.tables import _format_nested_value
+from ..renderers.shared.theme import (
     BG_PREVIEW,
     BG_SURFACE,
     FONT_FAMILY,
     TEXT_PRIMARY,
     TITLE_FONT_SIZE,
 )
-from ..rendering.value_html import _format_nested_value
+from ..shared.models import EdgeKind, NodeKind, VisualEdge, VisualGraph, VisualNode
 from ..utils.value_formatting import format_container_stub as _format_container_stub
 from .context import ViewBuildContext
 

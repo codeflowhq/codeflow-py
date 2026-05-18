@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from ...view_types import ViewKind
+from ...shared.view_kinds import ViewKind
 
 
 def _normalize_view_name(name: str) -> str:

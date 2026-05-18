@@ -1,10 +1,19 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from typing import Any
+from dataclasses import asdict
+from typing import Any, Literal
 
-from ..config import VisualizerConfig
-from .event_processing import (
+from ..pipeline.resolver import compatible_views
+from ..shared.config import VisualizerConfig
+from ..shared.models import ArtifactKind, Trace
+from .filtering import (
+    WatchFilter,
+    WatchTarget,
+    normalize_trace_watch_filters,
+    watch_filter_conditions,
+)
+from .processing import (
     _augment_pop_mutation_events,
     _compact_event_orders,
     _merge_duplicate_root_events,
@@ -16,12 +25,12 @@ from .rendering import (
     visualize_trace,
     visualize_traces,
 )
-from .trace_models import RenderedTraceFrame, VariableTraceEvent
-from .watch_filters import (
-    WatchFilter,
-    WatchTarget,
-    normalize_watch_filters,
-    watch_filter_conditions,
+from .types import (
+    RenderedTraceFrame,
+    TraceManifest,
+    TraceManifestEntry,
+    TraceManifestStep,
+    VariableTraceEvent,
 )
 
 try:  # pragma: no cover - soft dependency
@@ -44,6 +53,8 @@ __all__ = [
     "visualize_trace",
     "visualize_traces",
 ]
+
+TraceOutputMode = Literal["frames", "manifest"]
 
 
 class StepTracerUnavailableError(RuntimeError):
@@ -126,7 +137,7 @@ def trace_algorithm(
     globals_env = dict(globals_dict or {})
     exec_ctx = engine.execute_transformed_code(transformed, globals_env)
 
-    filters = normalize_watch_filters(watch_variables)
+    filters = normalize_trace_watch_filters(watch_variables)
     snapshots = _query_variable_snapshots(exec_ctx, filters)
     if max_events is None:
         limited = snapshots
@@ -175,6 +186,56 @@ def trace_algorithm(
     return _compact_event_orders(events)
 
 
+def _manifest_step(frame: RenderedTraceFrame) -> TraceManifestStep:
+    meta = dict(frame.meta)
+    execution_id = meta.get("execution_id")
+    order = meta.get("order")
+    timeline_key = (
+        f"{execution_id if execution_id is not None else frame.step}:"
+        f"{order if order is not None else 0}"
+    )
+    step_id = f"step {order if order is not None else frame.step}"
+    kind = "dot" if frame.artifact.kind == ArtifactKind.GRAPHVIZ else "svg"
+    return TraceManifestStep(
+        step_id=step_id,
+        timeline_key=timeline_key,
+        index=frame.step,
+        execution_id=execution_id,
+        order=order,
+        title=frame.artifact.title,
+        meta=meta,
+        kind=kind,
+        dot=frame.artifact.content if kind == "dot" else None,
+        svg=frame.artifact.content if kind == "svg" else None,
+    )
+
+
+def _build_trace_manifest(
+    traces: Mapping[str, Trace],
+    rendered: Mapping[str, list[RenderedTraceFrame]],
+) -> TraceManifest:
+    manifest: list[TraceManifestEntry] = []
+    for variable, frames in rendered.items():
+        steps = [_manifest_step(frame) for frame in frames]
+        kind = steps[0].kind if steps else "dot"
+        trace = traces.get(variable)
+        sample_value = trace.frames[-1].value if trace and trace.frames else None
+        compatible_view_kinds = (
+            [view.value for view in compatible_views(sample_value)]
+            if sample_value is not None
+            else ["auto"]
+        )
+        manifest.append(
+            TraceManifestEntry(
+                variable=variable,
+                kind=kind,
+                compatible_view_kinds=compatible_view_kinds,
+                steps=steps,
+            )
+        )
+    return TraceManifest(manifest=manifest)
+
+
 def visualize_algorithm(
     source_code: str,
     *,
@@ -184,7 +245,9 @@ def visualize_algorithm(
     tracer: StepTracer | None = None,
     globals_dict: Mapping[str, Any] | None = None,
     name_factory: Callable[[str], str] | None = None,
-) -> dict[str, list[RenderedTraceFrame]]:
+    output: TraceOutputMode = "frames",
+    payload: bool = False,
+) -> dict[str, list[RenderedTraceFrame]] | TraceManifest | dict[str, Any]:
     """Run StepTracer and render traces while preserving global execution steps."""
 
     events = trace_algorithm(
@@ -195,4 +258,10 @@ def visualize_algorithm(
         max_events=max_steps,
     )
     traces = build_traces(events, name_factory=name_factory)
-    return visualize_traces(traces.values(), config=config, max_steps=max_steps)
+    rendered = visualize_traces(traces.values(), config=config, max_steps=max_steps)
+    if output == "frames":
+        return rendered
+    manifest = _build_trace_manifest(traces, rendered)
+    if payload:
+        return {"manifest": [asdict(entry) for entry in manifest.manifest]}
+    return manifest

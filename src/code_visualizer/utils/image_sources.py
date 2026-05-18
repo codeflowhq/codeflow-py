@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from graphviz import Source  # type: ignore[import-untyped]
 
-from ..rendering.html_labels import html_img, html_single_cell_table
+from ..renderers.html.labels import html_img, html_single_cell_table
 
 _IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"}
 _DATA_URI_SUFFIX = {

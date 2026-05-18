@@ -4,10 +4,14 @@ from itertools import count
 
 import pytest
 
-from code_visualizer.models import NodeKind, VisualGraph, VisualNode
-from code_visualizer.view_types import ViewKind
+from code_visualizer.shared.models import NodeKind, VisualGraph, VisualNode
+from code_visualizer.shared.view_kinds import ViewKind
+from code_visualizer.views import composite_view, dispatcher
+from code_visualizer.views.composite_view import (
+    make_nested_renderer,
+    render_inline_child_view,
+)
 from code_visualizer.views.context import ViewBuildContext
-from code_visualizer.views.nested import make_nested_renderer, render_inline_child_view
 
 
 def _runtime() -> ViewBuildContext:
@@ -25,8 +29,6 @@ def _runtime() -> ViewBuildContext:
 def test_render_inline_child_view_returns_html_label_for_single_html_node(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from code_visualizer import graph_view_builder
-
     def _fake_build(*args: object, **kwargs: object) -> tuple[str, VisualGraph]:
         graph = VisualGraph()
         graph.add_node(
@@ -34,7 +36,7 @@ def test_render_inline_child_view_returns_html_label_for_single_html_node(
         )
         return "root", graph
 
-    monkeypatch.setattr(graph_view_builder, "build_graph_view", _fake_build)
+    monkeypatch.setattr(dispatcher, "build_graph_view", _fake_build)
     assert (
         render_inline_child_view(_runtime(), {"a": 1}, "slot", ViewKind.TABLE, 2)
         == "<b>x</b>"
@@ -44,11 +46,8 @@ def test_render_inline_child_view_returns_html_label_for_single_html_node(
 def test_render_inline_child_view_returns_none_on_build_or_render_failure(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from code_visualizer import graph_view_builder
-    from code_visualizer.views import nested
-
     monkeypatch.setattr(
-        graph_view_builder,
+        dispatcher,
         "build_graph_view",
         lambda *args, **kwargs: (_ for _ in ()).throw(ValueError("boom")),
     )
@@ -62,9 +61,9 @@ def test_render_inline_child_view_returns_none_on_build_or_render_failure(
         graph.add_node(VisualNode("root", NodeKind.OBJECT, "plain", {}))
         return "root", graph
 
-    monkeypatch.setattr(graph_view_builder, "build_graph_view", _graph_build)
+    monkeypatch.setattr(dispatcher, "build_graph_view", _graph_build)
     monkeypatch.setattr(
-        nested, "_render_dot_to_image", lambda dot_source, fmt="png": None
+        composite_view, "_render_dot_to_image", lambda dot_source, fmt="png": None
     )
     assert (
         render_inline_child_view(_runtime(), [1, 2], "slot", ViewKind.ARRAY_CELLS, 2)
@@ -82,17 +81,14 @@ def test_make_nested_renderer_returns_none_or_adds_edge(
 
     assert renderer(123, "ignored", 0) is None
 
-    from code_visualizer import graph_view_builder
-    from code_visualizer.views import nested
-
     monkeypatch.setattr(
-        nested, "render_inline_child_view", lambda *args, **kwargs: None
+        composite_view, "render_inline_child_view", lambda *args, **kwargs: None
     )
     monkeypatch.setattr(
-        nested, "select_nested_view", lambda *args, **kwargs: ViewKind.TABLE
+        composite_view, "select_nested_view", lambda *args, **kwargs: ViewKind.TABLE
     )
     monkeypatch.setattr(
-        graph_view_builder,
+        dispatcher,
         "_build_view",
         lambda runtime, value, name, view, depth: "child",
     )

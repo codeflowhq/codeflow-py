@@ -3,15 +3,14 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from ...models import NodeKind, VisualNode
-from ...rendering.html_labels import (
+from ...renderers.html.labels import (
     html_bold_text,
     html_cell,
     html_font,
     html_row,
     html_table,
 )
-from ...rendering.theme import (
+from ...renderers.shared.theme import (
     BG_FOCUS,
     BG_FOCUS_SOFT,
     BG_SURFACE,
@@ -22,6 +21,7 @@ from ...rendering.theme import (
     TEXT_INDEX,
     TEXT_PRIMARY,
 )
+from ...shared.models import NodeKind, VisualNode
 from ...utils.value_formatting import stable_svg_id as _stable_svg_id
 from ..graph_layout import init_graph_attrs, safe_dot_token
 

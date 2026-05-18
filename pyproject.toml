@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "code-visualizer"
+name = "codeflow-py"
 version = "0.1.0"
-description = "Graphviz-based visualization helpers for nested Python data structures."
+description = "CodeFlow Python visualization pipeline for nested Python data structures and traced execution."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
@@ -59,3 +59,6 @@ ignore = ["S101", "S102", "E501"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/code_visualizer"]

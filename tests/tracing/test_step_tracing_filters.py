@@ -1,29 +1,29 @@
+from code_visualizer.tracing.filtering import (
+    WatchFilter,
+    _normalize_access_path,
+    normalize_trace_watch_filters,
+    trace_access_path_matches,
+)
 from code_visualizer.tracing.pipeline import (
     _focus_path_from_frame_meta,
     _project_expression_watch_events,
     trace_algorithm,
 )
-from code_visualizer.tracing.trace_models import VariableTraceEvent
-from code_visualizer.tracing.watch_filters import (
-    WatchFilter,
-    _normalize_access_path,
-    access_path_matches,
-    normalize_watch_filters,
-)
+from code_visualizer.tracing.types import VariableTraceEvent
 
 
 def test_normalize_access_path_normalizes_quotes() -> None:
     assert _normalize_access_path('data["meta"]["level"]') == "data['meta']['level']"
 
 
-def testaccess_path_matches_descendants() -> None:
-    assert access_path_matches('data["meta"]', "data['meta']['level']")
-    assert access_path_matches("data['meta']", "data['meta']")
-    assert not access_path_matches("data['meta']", "data['other']")
+def testtrace_access_path_matches_descendants() -> None:
+    assert trace_access_path_matches('data["meta"]', "data['meta']['level']")
+    assert trace_access_path_matches("data['meta']", "data['meta']")
+    assert not trace_access_path_matches("data['meta']", "data['other']")
 
 
-def testnormalize_watch_filters_keeps_trace_name_for_expressions() -> None:
-    filters = normalize_watch_filters(["data", 'data["meta"]'])
+def testnormalize_trace_watch_filters_keeps_trace_name_for_expressions() -> None:
+    filters = normalize_trace_watch_filters(["data", 'data["meta"]'])
     assert filters[0].trace_name == 'data["meta"]'
     assert filters[0].access_path == 'data["meta"]'
     assert filters[0].name == "data"

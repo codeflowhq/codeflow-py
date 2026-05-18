@@ -1,4 +1,4 @@
-from code_visualizer.views.node_views.heap_payload import build_heap_tree_payload
+from code_visualizer.views.node_views.heap_projection import build_heap_tree_payload
 
 
 def test_build_heap_tree_payload_returns_none_for_empty_heap() -> None:
