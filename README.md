@@ -1,12 +1,12 @@
-# Code Visualizer
+# CodeFlow Python
 
-Graphviz-first helpers for turning arbitrary Python values into consistent visualizations. The project ships as a regular Python package and exposes a purely functional API so you can construct configs per session and pass them into `visualize()` or the StepTracer helpers without relying on module-level state.
+CodeFlow Python provides a Graphviz-first visualization pipeline for turning arbitrary Python values and traced execution into consistent visual artifacts. The project ships as a regular Python package and exposes a purely functional API so you can construct configs per session and pass them into `visualize()` or the StepTracer helpers without relying on module-level state.
 
 ## Highlights
-- Graphviz-first renderers cover arrays, matrices, tables, trees, graphs, heaps, linked lists, hash tables, and fallback node-link IRs.
+- Graphviz-first renderers cover arrays, matrices, tables, trees, graphs, heaps, linked lists, hash tables, and fallback node-link views.
 - Unified titles: even multi-node tree/graph renderers now share the same top-centered captions as HTML views, so gallery assets feel consistent.
 - Scalar-friendly cards: plain strings/bools/numbers render as minimalist cards, which keeps StepTracer traces readable when you mix scalars with structural payloads.
-- Functional API: `visualize`, `visualize_trace`, and `visualize_traces` only depend on the `VisualizerConfig` instance you pass in.
+- Minimal public API: the root package only exposes `visualize` and `visualize_algorithm`; lower-level tracing helpers stay under `code_visualizer.tracing`.
 - `ViewKind` enums and structured override maps replace ad-hoc strings so IDEs and type-checkers can validate inputs.
 - Converter pipelines (NumPy, pandas, or user supplied) run once per recursion layer, enabling seamless handling of nested arrays or custom tensor objects.
 - Optional [step-tracer](https://github.com/edcraft-org/step-tracer) integration lets you capture algorithm executions, filter the variables you care about, and feed snapshots back into the same visualization pipeline.
@@ -30,7 +30,7 @@ Graphviz-first helpers for turning arbitrary Python values into consistent visua
 
 ### Pip install
 ```bash
-pip install git+https://github.com/edcraft-org/code-visualizer.git
+pip install codeflow-py
 ```
 
 ### Local development
@@ -43,6 +43,7 @@ pip install -e .
 The `pip install -e .` step also installs runtime dependencies such as `graphviz`, `matplotlib`, `networkx`, `numpy`, `pandas`, and `pillow`.
 
 ## Quick start
+
 ## API usage refresher
 Everything still flows through a `VisualizerConfig` that you own. Create it once per session, mutate it locally, and hand it to the helpers below.
 
@@ -50,17 +51,17 @@ Everything still flows through a `VisualizerConfig` that you own. Create it once
 |------|-------------|-------|
 | Fresh config | `default_visualizer_config()` / `config.copy()` | Every call returns an isolated config; `.copy()` lets you fork tweaks without touching the original. |
 | Render a Python value | `visualize(value, *, name, config)` | Converter pipeline fires at every recursion layer, so nested NumPy/pandas payloads are normalized before view selection. |
-| StepTracer trace → artifacts | `visualize_trace(trace, *, config, max_steps=None)` / `visualize_traces(...)` | Titles show `name [step N]`. Skip `max_steps` to fall back to `config.trace_step_limit_default` or per-variable entries in `config.trace_step_limit_map`. |
-| One-call “run + render” | `visualize_algorithm(source, *, watch_variables, config, max_steps=None)` | Wraps `trace_algorithm` → `build_traces` → `visualize_traces` so you can invoke a single function. |
-| Manual trace control | `trace_algorithm(...)` + `build_traces(...)` | Use when you need to filter/transform StepTracer events before rendering. `watch_variables` accepts strings, dicts (`{"name": ..., "scope_id": ..., "line_number": ...}`), or `WatchFilter` objects. |
+| Trace + render execution | `visualize_algorithm(source, *, watch_variables, config, max_steps=None, output="frames")` | Primary public API for traced execution. Set `output="manifest", payload=True` when a browser client needs serialized data. |
+| Low-level tracing helpers | `code_visualizer.tracing.*` | Use only if you need explicit StepTracer event filtering, custom trace grouping, or manual replay. |
 | Custom converters | `config.with_converters(...)` | Compose adapters (e.g., PyTorch tensors) either prepended or appended to the default NumPy/pandas pipeline. Converters run once per recursion level. |
 | Per-variable step caps | `config.trace_step_limit_default` / `trace_step_limit_map` | Optional budgets for trace rendering—great when `queue_state` should stop at 3 steps but `visited_nodes` can span 10. Combine with `max_steps` for one-off overrides. |
 
-Stick to this flow and the rest of the README examples “just work”—the entry points stay stable even as new view kinds land.
+Stick to this flow and the rest of the README examples “just work”—the root entry points stay stable even as internal modules evolve.
 
 ### Direct data visualization
 ```python
-from code_visualizer import default_visualizer_config, visualize, ViewKind
+from code_visualizer import visualize
+from code_visualizer.shared import ViewKind, default_visualizer_config
 from graphviz import Source
 
 config = default_visualizer_config()
@@ -75,8 +76,9 @@ Calling `default_visualizer_config()` always returns a fresh `VisualizerConfig`.
 
 ### StepTracer-powered execution trace
 ```python
-from code_visualizer import default_visualizer_config, visualize_trace
-from code_visualizer.step_tracing import trace_algorithm, build_traces, WatchFilter
+from code_visualizer.shared import default_visualizer_config
+from code_visualizer import visualize_algorithm
+from code_visualizer.tracing.filtering import WatchFilter
 
 snippet = """
 data = [7, 3, 5, 1]
@@ -90,20 +92,23 @@ for i in range(len(data)):
         break
 """
 
-events = trace_algorithm(snippet, watch_variables=[
-    "data",
-    {"name": "swapped", "line_number": 4},
-    WatchFilter(name="queue_state", scope_id=1),
-])
-traces = build_traces(events)
 config = default_visualizer_config()
-step_artifacts = visualize_trace(traces["data"], config=config)
+step_artifacts = visualize_algorithm(
+    snippet,
+    watch_variables=[
+        "data",
+        {"name": "swapped", "line_number": 4},
+        WatchFilter(name="queue_state", scope_id=1),
+    ],
+    config=config,
+)["data"]
 ```
 Use dictionaries or `WatchFilter` instances (with `name`, `scope_id`, and `line_number`) to disambiguate variables that share the same identifier but live in different scopes.
 
 ### Integrated one-call visualization
 ```python
-from code_visualizer import default_visualizer_config, visualize_algorithm, ViewKind
+from code_visualizer import visualize_algorithm
+from code_visualizer.shared import ViewKind, default_visualizer_config
 
 config = default_visualizer_config()
 config.view_name_map["dp"] = ViewKind.MATRIX
@@ -119,14 +124,29 @@ artifacts = visualize_algorithm(
 )
 # artifacts["data"][0] already contains the rendered Graphviz source
 ```
-`visualize_algorithm()` wraps `trace_algorithm()`, `build_traces()`, and `visualize_traces()` so library consumers only call a single function when they want to run code + render variable snapshots.
+`visualize_algorithm()` is the primary public API for traced execution. Lower-level tracing helpers remain available from concrete tracing modules when a caller needs custom trace filtering or replay control.
+
+### Browser-style serialized output
+```python
+from code_visualizer import visualize_algorithm
+from code_visualizer.shared import default_visualizer_config
+
+payload = visualize_algorithm(
+    snippet,
+    watch_variables=["data"],
+    config=default_visualizer_config(),
+    output="manifest",
+    payload=True,
+)
+```
+This keeps browser delivery on the same public function instead of introducing a browser-only API surface.
 
 ## Demo gallery
 Run the end-to-end showcase to regenerate every artifact (array layouts, graph mappings with edge labels, DP matrices, numpy-nested payloads, and several StepTracer cases such as bubble sort, BFS queue state, DP tables, and graph snapshots):
 ```bash
-python -m code_visualizer.demo
+python -m demo.codeflow_demo
 ```
-All PNG/SVG outputs land in `src/code_visualizer/demo_outputs/`. We removed pre-generated images from the repo to keep commits light—rerun the demo anytime to recreate them. Each StepTracer case is defined in `STEP_TRACER_CASES` inside `src/code_visualizer/demo/samples.py`, so you can tweak payloads, watch filters, or append new algorithms.
+All PNG/SVG outputs land in `demo/outputs/`. We removed pre-generated images from the repo to keep commits light—rerun the demo anytime to recreate them. Each StepTracer case is defined in `STEP_TRACER_CASES` inside `demo/codeflow_demo/samples.py`, so you can tweak payloads, watch filters, or append new algorithms.
 
 ## Config lifecycle & customization
 
@@ -171,7 +191,7 @@ Converters run before every view selection, one recursion layer at a time. The d
 
 Extend it per session:
 ```python
-from code_visualizer import default_visualizer_config
+from code_visualizer.shared import default_visualizer_config
 
 config = default_visualizer_config().with_converters(
     lambda value: (
@@ -209,20 +229,26 @@ Tree tips: supply `.children` or dicts with `children` plus optional `label` / `
 3. `query-engine` filters/sorts StepTracer snapshots according to those rules so we do not maintain bespoke loops.
 4. `build_traces(events, name_factory=...)` groups snapshots per variable and returns `Trace` objects.
 5. `visualize_trace(trace, config=..., max_steps=...)` renders each step via the same `visualize()` helper.
-6. `visualize_traces(traces.values(), config=...)` bulk-renders everything, returning a `{name: [Artifact, ...]}` map.
+6. `visualize_traces(traces.values(), config=...)` bulk-renders everything, returning a `{name: [RenderedTraceFrame, ...]}` map.
 
 If `step-tracer` is missing, the helpers raise `StepTracerUnavailableError` with installation hints.
 
 ## Public API reference
+
+Root package:
+- `visualize(value, *, name, config)` – render an arbitrary Python value.
+- `visualize_algorithm(source, *, watch_variables=None, config=None, max_steps=None, output="frames", payload=False)` – run StepTracer and render the resulting snapshots.
+
+Shared configuration:
 - `default_visualizer_config()` – factory for fresh configs.
 - `VisualizerConfig.with_converters()` / `.copy()` – scoped mutations.
-- `visualize(value, *, name, config)` – render arbitrary payloads.
-- `visualize_trace(trace, *, config, max_steps=None)` – replay a single StepTracer trace.
-- `visualize_traces(traces, *, config, max_steps=None)` – convenience wrapper for multiple traces.
-- `trace_algorithm(source, *, watch_variables=None)` – run StepTracer (requires Python 3.12+).
-- `visualize_algorithm(source, *, watch_variables=None, config=None, max_steps=None)` – run StepTracer and render artifacts in one step.
-- `build_traces(events, name_factory=None)` – convert raw events to `Trace` objects.
-- `ViewKind` enum – strongly typed view identifiers for overrides and rendering decisions.
+- `ViewKind` – strongly typed view identifiers for overrides and rendering decisions.
+
+Advanced tracing helpers live under concrete tracing modules such as:
+
+- `code_visualizer.tracing.pipeline`
+- `code_visualizer.tracing.filtering`
+- `code_visualizer.tracing.rendering`
 
 ## Troubleshooting
 - **"No module named graphviz"** – ensure you installed both the Python package (`pip install graphviz`) and the Graphviz system binary (`brew install graphviz`, `apt install graphviz`, ...). Re-run `pip install -e .` inside your virtualenv afterwards.

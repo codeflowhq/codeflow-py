@@ -1,253 +1,186 @@
 # CodeFlow Python Library Architecture
 
-This document describes the current structure of the `code_visualizer` Python
-library after the refactor away from the earlier monolithic renderer design.
+## Purpose
 
-The goal of the library is narrow:
+`code_visualizer` is the import package for the `codeflow-py` distribution.
+The public surface is intentionally small:
 
-- trace Python execution,
-- resolve an appropriate visualization for each watched value,
-- render stable graph/image artifacts,
-- expose a small public API for Python callers and browser adapters.
+- `visualize(...)`
+- `visualize_algorithm(...)`
 
-## Design Principles
+Everything else is organized as internal boundaries that support one
+visualization pipeline.
 
-- Strongly typed internal boundaries
-- One module owns one concern
-- Clear separation between orchestration, rendering, tracing, and adapters
-- Minimal compatibility layers
-- Small public API, larger internal implementation surface
-
-## Top-Level Package Layout
+## Top-Level Structure
 
 `src/code_visualizer/`
 
-- `__init__.py`
-  - Public package API only
-  - Re-exports stable entry points such as `visualize`, `trace_algorithm`,
-    `visualize_algorithm`, and browser-manifest helpers
-- `api/`
-  - Browser-facing adapters that serialize internal Python models into
-    JSON-like payloads
-  - This layer exists to avoid coupling web clients to internal dataclasses and
-    enum details
-- `builders/`
-  - High-level orchestration from runtime values to artifacts
-  - Decides whether to use a structured view builder, scalar renderer, or
-    generic IR extractor
+- `shared/`
+  - shared config, models, and `ViewKind`
+- `pipeline/`
+  - value-visualization orchestration
 - `converters/`
-  - Value coercion pipeline for types such as `deque`, `numpy`, `pandas`, etc.
-- `ir/`
-  - Generic object extraction into the internal visual graph representation
-  - Used when no specialized structured view applies
-- `rendering/`
-  - Rendering helpers and backends
-  - Contains:
-    - `graphviz/` for DOT generation
-    - `value_html/` for nested HTML label formatting
-    - `html_labels.py` for Graphviz HTML-like label primitives
-    - `theme.py` for shared visual constants
-- `tracing/`
-  - Step-tracer integration, event processing, watch filters, and trace-to-frame
-    rendering
-- `utils/`
-  - Focused helper packages:
-    - `detection/` for graph/tree/linked/hash-like structure detection
-    - `type_patterns/` for override matching
-    - `value_formatting/` for text, size, and SVG id helpers
-    - `image_sources.py` and `value_shapes.py` for domain-specific helpers
+  - value coercion adapters
 - `views/`
-  - Structured visualization builders
-  - `node_views/` contains node-style views such as array, matrix, hash table,
-    linked list, and heap dual
+  - semantic view builders
+- `renderers/`
+  - Graphviz and HTML renderers
+- `tracing/`
+  - trace collection, filtering, processing, and rendering
+- `utils/`
+  - narrow helper packages only
 
-## Core Data Flow
+Repository-level assets live outside `src/`:
 
-### 1. Direct value visualization
+- `demo/codeflow_demo/`
+- `demo/outputs/`
+- `tests/`
 
-`visualize(value, name, config)` in
-`src/code_visualizer/builders/visualization.py`
+## Shared Boundary
 
-Flow:
+`shared/` owns stable definitions that multiple layers depend on.
 
-1. Clone config and build a coercion pipeline
-2. Coerce the incoming value
-3. Resolve the view kind via `builders/view_resolution.py`
-4. If the value matches a structured view:
-   - delegate to `builders/structured_artifacts.py`
-   - which uses `graph_view_builder.py`
-   - which dispatches to `views/` builders
-5. If the value is scalar:
-   - delegate to `builders/scalar_artifacts.py`
-6. Otherwise:
-   - extract generic IR via `ir/extractor.py`
-   - render with `rendering/graphviz/graphviz_export.py`
+- `shared/config.py`
+  - `VisualizerConfig`
+- `shared/models.py`
+  - graph, artifact, and trace models
+- `shared/view_kinds.py`
+  - `ViewKind`
 
-### 2. Trace visualization
+`shared/` is for architectural definitions. Pure helpers belong in `utils/`.
 
-`trace_algorithm(...)` and `visualize_algorithm(...)` in `tracing/pipeline.py`
+## Value Visualization Pipeline
 
-Flow:
+Entry point:
 
-1. Transform code through the step-tracer integration
-2. Collect variable events and normalize watch filters
-3. Post-process events in `tracing/event_processing.py`
-4. Build per-variable traces
-5. Render each frame using the same `visualize(...)` value pipeline
-
-### 3. Browser/web payload generation
-
-`build_browser_manifest_payload(...)` in
-`src/code_visualizer/api/browser_manifest.py`
+- `pipeline/pipeline.py`
 
 Flow:
 
-1. Call `visualize_algorithm(...)`
-2. Convert `RenderedTraceFrame` + `Artifact` models into browser-safe
-   dataclasses
-3. Serialize them into a plain `dict[str, Any]`
+1. `pipeline.py` prepares config and coercion.
+2. `resolver.py` resolves `ViewKind`, recursion depth, and compatibility.
+3. `render_dispatch.py` dispatches to one of three paths:
+   - scalar rendering
+   - structured view rendering
+   - fallback node-link rendering
+4. Structured rendering delegates to `views/dispatcher.py`.
+5. Concrete view modules organize semantic graph structure.
+6. `renderers/` emit Graphviz or HTML labels.
 
-This adapter layer is intentionally separate from the core API so the browser
-does not depend on internal Python model layout.
+`pipeline/` owns orchestration. It should not own view semantics or output code.
 
-## Internal Model Boundaries
+Compact view of the same flow:
 
-### Config
+```text
+visualize(...)
+  -> pipeline/pipeline.py
+  -> pipeline/resolver.py
+  -> pipeline/render_dispatch.py
+     -> scalar path
+     -> structured path -> views/dispatcher.py -> views/* -> renderers/*
+     -> fallback path   -> views/nodelink_*    -> renderers/graphviz/renderer.py
+```
 
-`src/code_visualizer/config.py`
+## Views
 
-- Defines the library configuration model
-- Contains defaults and override maps
-- Must remain the single source of truth for runtime options
+`views/` answers: “what structure should represent this value?”
 
-### View Resolution
+Key modules:
 
-`src/code_visualizer/builders/view_resolution.py`
+- `dispatcher.py`
+  - routes resolved `ViewKind` values to view builders
+- `composite_view.py`
+  - nested/composite inline rendering support
+- `graph_view.py`, `tree_view.py`, `image_view.py`, `bar_view.py`
+  - top-level semantic views
+- `nodelink_view.py`
+  - fallback node-link view entry point
+- `nodelink_graph.py`
+  - generic object-to-node-link graph extraction
+- `node_views/`
+  - array, matrix, table, hash table, linked list, and heap views
 
-- Determines which `ViewKind` to use
-- Applies explicit overrides, type-pattern overrides, and auto-detection
-- Computes recursion depth precedence
+`views/` does not emit DOT directly. That belongs in `renderers/`.
 
-### View Execution Context
+## Renderers
 
-`src/code_visualizer/views/context.py`
+`renderers/` owns output formatting.
 
-- Replaces the old untyped runtime dictionary
-- Provides typed access to:
-  - output graph
-  - resolver
-  - item limit
-  - focus path
-  - title visibility
-  - ID counter
+- `renderers/graphviz/`
+  - `*_renderer.py` modules for each view family
+- `renderers/html/`
+  - label builders and nested HTML table formatting
+- `renderers/shared/`
+  - renderer-only shared constants and DOT helpers
 
-This is a critical boundary. New view builders should depend on
-`ViewBuildContext`, not on ad-hoc dictionaries.
+Renderer naming matches view naming where practical:
 
-### HTML Label Construction
+- `views/graph_view.py` -> `renderers/graphviz/graph_renderer.py`
+- `views/tree_view.py` -> `renderers/graphviz/tree_renderer.py`
+- `views/nodelink_view.py` -> `renderers/graphviz/renderer.py`
 
-`src/code_visualizer/rendering/html_labels.py`
+## Trace Pipeline
 
-- Provides small composable functions:
-  - `html_table`
-  - `html_row`
-  - `html_cell`
-  - `html_font`
-  - `html_img`
-  - `html_single_cell_table`
+Entry point:
 
-View modules should prefer these helpers over raw f-string table assembly.
+- `tracing/pipeline.py`
 
-### Visual Theme
+Trace flow:
 
-`src/code_visualizer/rendering/theme.py`
+1. `pipeline.py` runs StepTracer and collects snapshots.
+2. `filtering.py` normalizes watch targets and access-path rules.
+3. `processing.py` augments and compacts events.
+4. `rendering.py` groups events into traces and renders frames.
+5. Each frame delegates back into the normal value pipeline.
 
-- Owns shared colors, font family, font sizes, and recurring visual tokens
-- Avoid adding new scattered hex literals in view/rendering files unless there
-  is a good reason not to reuse the theme
+Browser-style manifest output is a parameterized mode on
+`visualize_algorithm(...)`, not a separate API package.
 
-## Graph Rendering Layers
+Compact view of the trace flow:
 
-There are two Graphviz-oriented rendering styles in the codebase.
+```text
+visualize_algorithm(...)
+  -> tracing/pipeline.py
+  -> tracing/filtering.py
+  -> tracing/processing.py
+  -> tracing/rendering.py
+  -> pipeline/pipeline.py   # per rendered frame
+```
 
-### Structured view builders
+## Naming Rules
 
-- Build a `VisualGraph`
-- Use `graph_view_builder.py`
-- Render through `rendering/graphviz/graphviz_export.py`
+- `shared/*`
+  - stable definitions
+- `pipeline/*`
+  - orchestration roles (`pipeline.py`, `resolver.py`, `render_dispatch.py`)
+- `views/*`
+  - semantic view builders (`*_view.py` where appropriate)
+- `renderers/*`
+  - output emitters (`*_renderer.py` where appropriate)
+- `tracing/*`
+  - trace pipeline stages (`pipeline.py`, `filtering.py`, `processing.py`, `rendering.py`, `types.py`)
 
-This is the primary path for modern structured views.
+Avoid generic names such as `common.py`, `helpers.py`, or browser-only API wrappers.
 
-### Standalone graphviz helpers
+## Testing Layout
 
-Located in `src/code_visualizer/rendering/graphviz/`
+Tests mirror the same boundaries.
 
-Examples:
-
-- `array_graphviz.py`
-- `table_graphviz.py`
-- `linked_list_graphviz.py`
-- `hash_table_graphviz.py`
-
-These are smaller focused renderers and remain valid, but they should still use
-shared theme and HTML helper infrastructure.
-
-## Testing Structure
-
-Tests mirror the source tree:
-
-- `tests/api/`
-- `tests/builders/`
-- `tests/converters/`
-- `tests/ir/`
-- `tests/rendering/graphviz/`
-- `tests/tracing/`
-- `tests/utils/detection/`
-- `tests/utils/type_patterns/`
+- `tests/shared/`
+- `tests/pipeline/`
+- `tests/renderers/graphviz/`
 - `tests/views/`
 - `tests/views/node_views/`
+- `tests/tracing/`
+- `tests/converters/`
+- `tests/utils/`
 
-Rule:
+## Public API
 
-- new source module -> corresponding test module in the mirrored test subtree
-
-## Public API vs Internal API
-
-### Public
-
-Keep stable:
+Root package exports remain intentionally minimal:
 
 - `visualize`
-- `trace_algorithm`
 - `visualize_algorithm`
-- `build_browser_manifest`
-- `build_browser_manifest_payload`
-- `visualize_algorithm_manifest`
-- `visualize_algorithm_manifest_payload`
-- `ViewKind`
-- `VisualizerConfig`
-- `default_visualizer_config`
 
-### Internal
-
-Everything else should be treated as internal implementation detail unless it is
-explicitly re-exported from a package `__init__.py`.
-
-## What To Avoid Going Forward
-
-- Reintroducing root-level shim modules
-- New catch-all files like `common.py`, `helpers.py`, or `utils.py`
-- Passing untyped dict bags across module boundaries
-- Duplicating view-selection logic in multiple places
-- Adding new raw HTML table strings where `html_labels.py` is sufficient
-- Embedding browser-specific payload logic into tracing or rendering layers
-
-## Current Improvement Frontier
-
-The major architecture work is complete. Remaining work is refinement rather
-than redesign:
-
-- continue migrating any remaining raw HTML snippets to helper-based builders
-- keep consolidating recurring visual constants into `theme.py`
-- maintain strict separation between browser adapters and core Python logic
-- keep tests aligned with new modules as the codebase evolves
+Lower-level tracing helpers, config types, and models stay in subpackages.
+They are internal building blocks first, convenience imports second.
